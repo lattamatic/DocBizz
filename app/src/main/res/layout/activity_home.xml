@@ -84,7 +84,7 @@
     <Button
         android:layout_width="250dp"
         android:text="Register"
-        android:layout_gravity="center "
+        android:layout_gravity="center"
         android:background="#ffffff"
         android:textSize="18sp"
         android:paddingRight="30dp"
