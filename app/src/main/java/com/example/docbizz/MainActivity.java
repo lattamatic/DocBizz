@@ -68,6 +68,9 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_sendreferrals, container, false);
+
+            //TODO : Make a backend request for sending the referral when Send button is clicked..
+
             return rootView;
         }
     }
