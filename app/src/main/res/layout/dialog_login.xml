@@ -62,7 +62,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/btnLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
@@ -71,7 +71,7 @@
         android:shadowDx="5"
         android:textSize="15sp"
         android:background="@color/myPrimaryColor"
-        android:text="Submit"
+        android:text="Login"
         android:layout_marginBottom="20dp"
         android:textColor="@color/myAccentColor" />
 
