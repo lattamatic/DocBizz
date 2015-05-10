@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DocBizz</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_splashscreen">Splashscreen</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string-array name="cities_array">
+        <item>Chennai</item>
+        <item>Bangalore</item>
+        <item>Mumbai</item>
+        <item>New Delhi</item>
+        <item>Pune</item>
+    </string-array>
+    <string-array name="hospitals_array">
+        <item>Apollo</item>
+        <item>MIOT</item>
+        <item>Govt Hospital</item>
+        <item>IITM Hospital</item>
+    </string-array>
+
+    <string name="title_activity_login">Login</string>
+
+</resources>
