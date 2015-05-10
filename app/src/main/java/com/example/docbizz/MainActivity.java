@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
+import contacts.ContactItem;
+import contacts.ContactRecyclerViewAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
 
@@ -93,6 +95,36 @@ public class MainActivity extends ActionBarActivity {
             return rootView;
         }
     }
+
+    public static class ContactsFragment extends Fragment {
+
+        public ContactsFragment() {
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
+
+            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContacts);
+            final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
+
+            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            recyclerView.setHasFixedSize(true);
+
+            ArrayList<ContactItem> contactItemArrayList = new ArrayList<>();
+
+            //TODO : Fill the data to be displayed in this arraylist
+
+            ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
+            recyclerView.setAdapter(adapter);
+
+            return rootView;
+        }
+    }
+
     public static class ReferralsFragment extends Fragment {
 
         public ReferralsFragment() {
@@ -110,6 +142,7 @@ public class MainActivity extends ActionBarActivity {
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
+
             ArrayList<ReportItem> reportItemArrayList = new ArrayList<>();
 
             //TODO : Fill the data to be displayed in this arraylist
