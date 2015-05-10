@@ -4,5 +4,10 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
     </style>
-
+    <style name="image_slider">
+        <item name="android:background">@drawable/image_slider</item>
+    </style>
+    <style name="image_slider_current">
+        <item name="android:background">@drawable/image_slider_current</item>
+    </style>
 </resources>
