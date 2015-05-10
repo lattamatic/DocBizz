@@ -32,6 +32,14 @@
             android:name=".Home"
             android:label="@string/title_activity_home" >
         </activity>
+        <activity
+            android:name=".IncomingReferralDetails"
+            android:label="@string/title_activity_incoming_referral_details" >
+        </activity>
+        <activity
+            android:name=".SentReferralDetails"
+            android:label="@string/title_activity_sent_referral_details" >
+        </activity>
     </application>
 
 </manifest>
