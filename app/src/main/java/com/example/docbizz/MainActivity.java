@@ -92,6 +92,22 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_report, container, false);
+
+            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewReports);
+            final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
+
+            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            recyclerView.setHasFixedSize(true);
+
+            ArrayList<ReportItem> reportItemArrayList = new ArrayList<>();
+
+            //TODO : Fill the data to be displayed in this arraylist
+
+            ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
+            recyclerView.setAdapter(adapter);
+
             return rootView;
         }
     }
@@ -134,21 +150,6 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
-
-            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewReports);
-            final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
-
-            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(layoutManager);
-            recyclerView.setItemAnimator(new DefaultItemAnimator());
-            recyclerView.setHasFixedSize(true);
-
-            ArrayList<ReportItem> reportItemArrayList = new ArrayList<>();
-
-            //TODO : Fill the data to be displayed in this arraylist
-
-            ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
-            recyclerView.setAdapter(adapter);
 
             return rootView;
         }
