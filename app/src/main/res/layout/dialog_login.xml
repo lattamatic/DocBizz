@@ -71,7 +71,7 @@
         android:shadowDx="5"
         android:textSize="15sp"
         android:background="@color/myPrimaryColor"
-        android:text="@string/submit"
+        android:text="Submit"
         android:layout_marginBottom="20dp"
         android:textColor="@color/myAccentColor" />
 

@@ -1,7 +1,6 @@
 package com.example.docbizz;
 
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -20,7 +18,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new DashboardFragment())
+                    .add(R.id.container, new ReferralsFragment())
                     .commit();
         }
     }
@@ -51,9 +49,9 @@ public class MainActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class DashboardFragment extends Fragment {
+    public static class SendReferralsFragment extends Fragment {
 
-        public DashboardFragment() {
+        public SendReferralsFragment() {
         }
 
         @Override
