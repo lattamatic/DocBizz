@@ -3,11 +3,19 @@ package com.example.docbizz;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.ArrayList;
+
+import reports.ReportItem;
+import reports.ReportRecyclerViewAdapter;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -94,6 +102,21 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
+
+            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewReports);
+            final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
+
+            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+            recyclerView.setHasFixedSize(true);
+            ArrayList<ReportItem> reportItemArrayList = new ArrayList<>();
+
+            //TODO : Fill the data to be displayed in this arraylist
+
+            ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
+            recyclerView.setAdapter(adapter);
+
             return rootView;
         }
     }
