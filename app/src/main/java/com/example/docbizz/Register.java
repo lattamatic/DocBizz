@@ -78,6 +78,14 @@ public class Register extends ActionBarActivity {
                         sharedPreferencesEditor.putString("user", responseObject.getJSONObject("data").toString());
                         sharedPreferencesEditor.commit();
 
+                        ServiceHandler requestMakerLogin = new ServiceHandler();
+
+                        List<NameValuePair> paramsLogin = new ArrayList<NameValuePair>();
+                        paramsLogin.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
+                        paramsLogin.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
+
+                        String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
+
                         Intent intent = new Intent(Register.this, MainActivity.class);
                         startActivity(intent);
                         finish();
