@@ -2,8 +2,9 @@ package com.example.docbizz;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ import util.data;
 
 
 public class Register extends ActionBarActivity {
+
+    private static EditText editTextFullName, editTextEmail, editTextPhone, editTextPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,58 +53,104 @@ public class Register extends ActionBarActivity {
         adapterSpeciality.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSpeciality.setAdapter(adapterSpeciality);
 
-        final EditText editTextFullName = (EditText) findViewById(R.id.editTextFullName);
-        final EditText editTextEmail = (EditText) findViewById(R.id.editTextEmail);
-        final EditText editTextPhone = (EditText) findViewById(R.id.editTextPhone);
-        final EditText editTextPassword = (EditText) findViewById(R.id.editTextPassword);
+        editTextFullName = (EditText) findViewById(R.id.editTextFullName);
+        editTextEmail = (EditText) findViewById(R.id.editTextEmail);
+        editTextPhone = (EditText) findViewById(R.id.editTextPhone);
+        editTextPassword = (EditText) findViewById(R.id.editTextPassword);
 
         Button btnSubmit = (Button) findViewById(R.id.btnSubmit);
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ServiceHandler requestMaker = new ServiceHandler();
 
-                List<NameValuePair> params = new ArrayList<NameValuePair>();
-                params.add(new BasicNameValuePair("name", editTextFullName.getText().toString()));
-                params.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
-                params.add(new BasicNameValuePair("phone", editTextPhone.getText().toString()));
-                params.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
-                params.add(new BasicNameValuePair("spec", spinnerSpeciality.getSelectedItem().toString()));
-                params.add(new BasicNameValuePair("city", spinnerCity.getSelectedItem().toString()));
-                params.add(new BasicNameValuePair("hospital", spinnerHospital.getSelectedItem().toString()));
+                new RegisterTask().execute(editTextFullName.getText().toString(),editTextEmail.getText().toString()
+                        ,editTextPhone.getText().toString(),editTextPassword.getText().toString(),spinnerSpeciality.getSelectedItem().toString(),
+                        spinnerCity.getSelectedItem().toString(),spinnerHospital.getSelectedItem().toString());
 
-                String response = requestMaker.makeServiceCall(data.urlRegister, ServiceHandler.POST, params);
+            }
+        });
+    }
 
-                try {
-                    JSONObject responseObject = new JSONObject(response);
-                    if(responseObject.getBoolean("result")) {
-                        ServiceHandler requestMakerLogin = new ServiceHandler();
+    public class RegisterTask extends AsyncTask<String,Void,String>{
 
-                        List<NameValuePair> paramsLogin = new ArrayList<NameValuePair>();
-                        paramsLogin.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
-                        paramsLogin.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
+        String name, email, phone, password, spec, city, hospital;
 
-                        String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
-                        JSONObject responseLoginObject = new JSONObject(responseLogin);
+        @Override
+        protected String doInBackground(String... params) {
 
-                        SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
-                        sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
-                        sharedPreferencesEditor.commit();
+            name = params[0];
+            email = params[1];
+            phone = params[2];
+            password = params[3];
+            spec = params[4];
+            city = params[5];
+            hospital = params[6];
 
-                        Intent intent = new Intent(Register.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                    else {
-                        Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
-                    }
+            List<NameValuePair> paramsRegister = new ArrayList<NameValuePair>();
+            paramsRegister.add(new BasicNameValuePair("name", name));
+            paramsRegister.add(new BasicNameValuePair("email", email));
+            paramsRegister.add(new BasicNameValuePair("phone", phone));
+            paramsRegister.add(new BasicNameValuePair("password", password));
+            paramsRegister.add(new BasicNameValuePair("spec", spec));
+            paramsRegister.add(new BasicNameValuePair("city", city));
+            paramsRegister.add(new BasicNameValuePair("hospital", hospital));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            String response = requestMaker.makeServiceCall(data.urlRegister, ServiceHandler.POST, paramsRegister);
+
+            try {
+                JSONObject responseObject = new JSONObject(response);
+                if(responseObject.getBoolean("result")) {
+
+                    new LoginTask().execute(editTextEmail.getText().toString(),editTextPassword.getText().toString());
                 }
-                catch(Exception e) {
-                    e.printStackTrace();
+                else {
                     Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
                 }
             }
-        });
+            catch(Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
+            }
+
+            return null;
+        }
+    }
+
+    public class LoginTask extends AsyncTask<String,Void,String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            ServiceHandler requestMakerLogin = new ServiceHandler();
+
+            List<NameValuePair> paramsLogin = new ArrayList<NameValuePair>();
+            paramsLogin.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
+            paramsLogin.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
+
+            String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
+            JSONObject responseLoginObject = null;
+            try {
+                responseLoginObject = new JSONObject(responseLogin);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+            try {
+                sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            sharedPreferencesEditor.commit();
+
+            Intent intent = new Intent(Register.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+
+            return null;
+        }
     }
 
     @Override
