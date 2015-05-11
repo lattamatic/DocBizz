@@ -17,7 +17,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:fillViewport="true"
-            > <!--IMPORTANT otherwise backgrnd img. will not fill the whole screen -->
+            >
 
             <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -64,15 +64,19 @@
                 <Spinner
                     android:id="@+id/spinnerCity"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"/>
                 <Spinner
                     android:id="@+id/spinnerHospital"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"/>
                 <Spinner
                     android:id="@+id/spinnerSpeciality"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"/>
+<!--
 
                 <TextView
                     android:id="@+id/textViewGender"
@@ -83,6 +87,7 @@
                     android:text="Gender"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:layout_below="@+id/textViewCollegeName" />
+-->
 
                 <!--<Spinner
                   android:id="@+id/spinnerGender"
@@ -96,6 +101,7 @@
                   android:layout_marginLeft="30dp"  />-->
 
 
+<!--
 
                 <RadioGroup
                     android:id="@+id/radioGenderGroup"
@@ -122,6 +128,7 @@
                         android:layout_alignTop="@+id/radioGenderGroup"/>
 
                 </RadioGroup>
+-->
 
                 <TextView
                     android:id="@+id/textViewPhone"
@@ -138,8 +145,6 @@
                     android:id="@+id/editTextPhone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignLeft="@+id/textViewCollegeName"
-                    android:layout_below="@+id/textViewCollegeName"
                     android:layout_marginLeft="30dp"
                     android:textColor="#000"
                     android:cursorVisible="true"
@@ -194,11 +199,11 @@
                     android:inputType="textPassword" />
 
                 <Button
-                    android:id="@+id/buttonSubmit"
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="Submit"
+                    android:id="@+id/btnSubmit"
                     android:layout_below="@+id/editTextPassword"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"

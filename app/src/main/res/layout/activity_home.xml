@@ -80,7 +80,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:textColor="@color/myPrimaryColor"
-        android:id="@+id/btnLogin" />
+        android:id="@+id/btnHomeLogin" />
     <Button
         android:layout_width="250dp"
         android:text="Register"
@@ -92,5 +92,5 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:textColor="@color/myPrimaryColor"
-        android:id="@+id/btnRegister" />
+        android:id="@+id/btnHomeRegister" />
     </LinearLayout>

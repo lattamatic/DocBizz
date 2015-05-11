@@ -24,5 +24,11 @@ public class data {
     public static List<NavDrawerItem> getNavDrawerItems(){
         return Arrays.asList(navtitles);
     }
+
+    public static String urlDomain = "http://www.docbizz.org/";
+    public static String urlRegister = urlDomain + "register.php";
+    public static String urlLogin = urlDomain + "login.php";
+    public static String urlInbox = urlDomain + "inbox.php";
+    public static String urlSent = urlDomain + "sent.php";
 }
 

@@ -1,11 +1,27 @@
 package com.example.docbizz;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import util.ServiceHandler;
+import util.data;
 
 
 public class Register extends ActionBarActivity {
@@ -15,23 +31,67 @@ public class Register extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        Spinner spinnerCity = (Spinner) findViewById(R.id.spinnerCity);
+        final Spinner spinnerCity = (Spinner) findViewById(R.id.spinnerCity);
         ArrayAdapter<CharSequence> adapterCity = ArrayAdapter.createFromResource(this,
                 R.array.cities_array, android.R.layout.simple_spinner_item);
         adapterCity.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCity.setAdapter(adapterCity);
 
-        Spinner spinnerHospital = (Spinner) findViewById(R.id.spinnerHospital);
+        final Spinner spinnerHospital = (Spinner) findViewById(R.id.spinnerHospital);
         ArrayAdapter<CharSequence> adapterHospital = ArrayAdapter.createFromResource(this,
                 R.array.hospitals_array,android.R.layout.simple_spinner_item);
         adapterHospital.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerHospital.setAdapter(adapterHospital);
 
-        Spinner spinnerSpeciality = (Spinner) findViewById(R.id.spinnerSpeciality);
+        final Spinner spinnerSpeciality = (Spinner) findViewById(R.id.spinnerSpeciality);
         ArrayAdapter<CharSequence> adapterSpeciality = ArrayAdapter.createFromResource(this,
                 R.array.hospitals_array,android.R.layout.simple_spinner_item);
         adapterSpeciality.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSpeciality.setAdapter(adapterSpeciality);
+
+        final EditText editTextFullName = (EditText) findViewById(R.id.editTextFullName);
+        final EditText editTextEmail = (EditText) findViewById(R.id.editTextEmail);
+        final EditText editTextPhone = (EditText) findViewById(R.id.editTextPhone);
+        final EditText editTextPassword = (EditText) findViewById(R.id.editTextPassword);
+
+        Button btnSubmit = (Button) findViewById(R.id.btnSubmit);
+        btnSubmit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ServiceHandler requestMaker = new ServiceHandler();
+
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("name", editTextFullName.getText().toString()));
+                params.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
+                params.add(new BasicNameValuePair("phone", editTextPhone.getText().toString()));
+                params.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
+                params.add(new BasicNameValuePair("spec", spinnerSpeciality.getPrompt().toString()));
+                params.add(new BasicNameValuePair("city", spinnerCity.getPrompt().toString()));
+                params.add(new BasicNameValuePair("hospital", spinnerHospital.getPrompt().toString()));
+
+                String response = requestMaker.makeServiceCall(data.urlRegister, ServiceHandler.POST, params);
+
+                try {
+                    JSONObject responseObject = new JSONObject(response);
+                    if(responseObject.getBoolean("result")) {
+                        SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+                        sharedPreferencesEditor.putString("user", responseObject.getJSONObject("data").toString());
+                        sharedPreferencesEditor.commit();
+
+                        Intent intent = new Intent(Register.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
