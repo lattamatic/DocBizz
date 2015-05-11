@@ -120,14 +120,19 @@ public class Register extends ActionBarActivity {
 
     public class LoginTask extends AsyncTask<String,Void,String>{
 
+        String email, password;
+
         @Override
         protected String doInBackground(String... params) {
 
             ServiceHandler requestMakerLogin = new ServiceHandler();
 
+            email = params[0];
+            password = params[1];
+
             List<NameValuePair> paramsLogin = new ArrayList<NameValuePair>();
-            paramsLogin.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
-            paramsLogin.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
+            paramsLogin.add(new BasicNameValuePair("email", email));
+            paramsLogin.add(new BasicNameValuePair("password", password));
 
             String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
             JSONObject responseLoginObject = null;
