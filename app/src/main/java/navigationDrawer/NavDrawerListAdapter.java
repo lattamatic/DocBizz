@@ -9,7 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.exebit.exebit2k15.R;
+import com.example.docbizz.R;
 
 import java.util.List;
 

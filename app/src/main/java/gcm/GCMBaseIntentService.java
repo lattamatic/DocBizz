@@ -28,16 +28,16 @@ import android.util.Log;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.android.gcm.GCMConstants.ERROR_SERVICE_NOT_AVAILABLE;
-import static com.google.android.gcm.GCMConstants.EXTRA_ERROR;
-import static com.google.android.gcm.GCMConstants.EXTRA_REGISTRATION_ID;
-import static com.google.android.gcm.GCMConstants.EXTRA_SPECIAL_MESSAGE;
-import static com.google.android.gcm.GCMConstants.EXTRA_TOTAL_DELETED;
-import static com.google.android.gcm.GCMConstants.EXTRA_UNREGISTERED;
-import static com.google.android.gcm.GCMConstants.INTENT_FROM_GCM_LIBRARY_RETRY;
-import static com.google.android.gcm.GCMConstants.INTENT_FROM_GCM_MESSAGE;
-import static com.google.android.gcm.GCMConstants.INTENT_FROM_GCM_REGISTRATION_CALLBACK;
-import static com.google.android.gcm.GCMConstants.VALUE_DELETED_MESSAGES;
+import static gcm.GCMConstants.ERROR_SERVICE_NOT_AVAILABLE;
+import static gcm.GCMConstants.EXTRA_ERROR;
+import static gcm.GCMConstants.EXTRA_REGISTRATION_ID;
+import static gcm.GCMConstants.EXTRA_SPECIAL_MESSAGE;
+import static gcm.GCMConstants.EXTRA_TOTAL_DELETED;
+import static gcm.GCMConstants.EXTRA_UNREGISTERED;
+import static gcm.GCMConstants.INTENT_FROM_GCM_LIBRARY_RETRY;
+import static gcm.GCMConstants.INTENT_FROM_GCM_MESSAGE;
+import static gcm.GCMConstants.INTENT_FROM_GCM_REGISTRATION_CALLBACK;
+import static gcm.GCMConstants.VALUE_DELETED_MESSAGES;
 
 
 /**

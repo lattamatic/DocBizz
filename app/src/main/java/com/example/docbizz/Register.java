@@ -65,9 +65,9 @@ public class Register extends ActionBarActivity {
                 params.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
                 params.add(new BasicNameValuePair("phone", editTextPhone.getText().toString()));
                 params.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
-                params.add(new BasicNameValuePair("spec", spinnerSpeciality.getPrompt().toString()));
-                params.add(new BasicNameValuePair("city", spinnerCity.getPrompt().toString()));
-                params.add(new BasicNameValuePair("hospital", spinnerHospital.getPrompt().toString()));
+                params.add(new BasicNameValuePair("spec", spinnerSpeciality.getSelectedItem().toString()));
+                params.add(new BasicNameValuePair("city", spinnerCity.getSelectedItem().toString()));
+                params.add(new BasicNameValuePair("hospital", spinnerHospital.getSelectedItem().toString()));
 
                 String response = requestMaker.makeServiceCall(data.urlRegister, ServiceHandler.POST, params);
 
