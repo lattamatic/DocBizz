@@ -18,6 +18,7 @@ import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
+import util.InfiniteRecyclerViewOnScrollListener;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -91,6 +92,11 @@ public class MainActivity extends ActionBarActivity {
         public ReportFragment() {
         }
 
+        public void loadMoreItems(int rLimit, int rOffset) {
+            rOffset = rOffset + rLimit;
+            //TODO : ping to the same URL with different offset and limit
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -99,10 +105,21 @@ public class MainActivity extends ActionBarActivity {
             RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewReports);
             final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
 
+            final int rLimit = 10;
+            final int rOffset = 0;
+
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
+
+            RecyclerView.OnScrollListener onScrollListener = new InfiniteRecyclerViewOnScrollListener(layoutManager) {
+                @Override
+                public void onLoadMore() {
+                    loadMoreItems(rLimit, rOffset);
+                }
+            };
+            recyclerView.setOnScrollListener(onScrollListener);
 
             ArrayList<ReportItem> reportItemArrayList = new ArrayList<>();
 
