@@ -74,10 +74,6 @@ public class Register extends ActionBarActivity {
                 try {
                     JSONObject responseObject = new JSONObject(response);
                     if(responseObject.getBoolean("result")) {
-                        SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
-                        sharedPreferencesEditor.putString("user", responseObject.getJSONObject("data").toString());
-                        sharedPreferencesEditor.commit();
-
                         ServiceHandler requestMakerLogin = new ServiceHandler();
 
                         List<NameValuePair> paramsLogin = new ArrayList<NameValuePair>();
@@ -85,6 +81,11 @@ public class Register extends ActionBarActivity {
                         paramsLogin.add(new BasicNameValuePair("password", editTextPassword.getText().toString()));
 
                         String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
+                        JSONObject responseLoginObject = new JSONObject(responseLogin);
+
+                        SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+                        sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
+                        sharedPreferencesEditor.commit();
 
                         Intent intent = new Intent(Register.this, MainActivity.class);
                         startActivity(intent);
