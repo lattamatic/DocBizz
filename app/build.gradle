@@ -26,4 +26,6 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:21.0.+'
     compile 'de.hdodenhof:circleimageview:1.2.1'
     compile 'com.android.support:support-v4:21.0.+'
+    compile files('libraries/android-support-v13.jar')
+    compile 'com.google.android.gms:play-services:6.+'
 }

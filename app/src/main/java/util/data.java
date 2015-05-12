@@ -30,5 +30,8 @@ public class data {
     public static String urlLogin = urlDomain + "login.php";
     public static String urlInbox = urlDomain + "inbox.php";
     public static String urlSent = urlDomain + "sent.php";
+
+    public static String SENDER_ID = ""; //TODO : project ID from Google Console
+
 }
 

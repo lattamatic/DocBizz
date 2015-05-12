@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import gcm.GCMRegistrar;
 import util.ServiceHandler;
 import util.data;
 
@@ -28,6 +30,16 @@ public class Splashscreen extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splashscreen);
+
+        GCMRegistrar.checkDevice(this);
+        GCMRegistrar.checkManifest(this);
+        final String regId = GCMRegistrar.getRegistrationId(this);
+        if (regId.equals("")) {
+            GCMRegistrar.register(this, data.SENDER_ID);
+        } else {
+            Log.v("Reg id", regId);
+
+        }
 
         SharedPreferences sharedPreferences = getSharedPreferences("DocBizz", MODE_PRIVATE);
         String strUser = sharedPreferences.getString("user","");
@@ -50,7 +62,6 @@ public class Splashscreen extends ActionBarActivity {
             startActivity(intent);
             finish();
         }
-
     }
 
     @Override
