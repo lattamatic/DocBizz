@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import gcm.GCMRegistrar;
 import util.ServiceHandler;
 import util.data;
 
@@ -94,6 +96,9 @@ public class Register extends ActionBarActivity {
             paramsRegister.add(new BasicNameValuePair("spec", spec));
             paramsRegister.add(new BasicNameValuePair("city", city));
             paramsRegister.add(new BasicNameValuePair("hospital", hospital));
+            paramsRegister.add(new BasicNameValuePair("gcm_id", GCMRegistrar.getRegistrationId(getApplicationContext())));
+
+            Log.i("gcm_id", GCMRegistrar.getRegistrationId(getApplicationContext()));
 
             ServiceHandler requestMaker = new ServiceHandler();
 
