@@ -30,6 +30,10 @@ public class data {
     public static String urlLogin = urlDomain + "login.php";
     public static String urlInbox = urlDomain + "inbox.php";
     public static String urlSent = urlDomain + "sent.php";
+    public static String urlContacts = urlDomain + "contacts.php";
+    public static String urlReports = urlDomain + "reports.php";
+    public static String urlSendReferral = urlDomain + "refer.php";
+    public static String urlApproveDeclineReferral = urlDomain + "appdec.php";
 
     public static String SENDER_ID = ""; //TODO : project ID from Google Console
 

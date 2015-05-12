@@ -1,16 +1,16 @@
 package com.example.docbizz;
 
-import android.app.FragmentTransaction;
-import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +20,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +37,7 @@ import navigationDrawer.NavDrawerListAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
 import util.InfiniteRecyclerViewOnScrollListener;
+import util.ServiceHandler;
 import util.data;
 
 
@@ -41,6 +48,11 @@ public class MainActivity extends ActionBarActivity {
     private ListView drawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     public static FragmentManager SupportFragmentManager;
+    public static ArrayList<String> contactsIDs, contactsName, contactsEmail, contactsPhone, contactsSpeciality, contactsCity, contactsHospital;
+    public static ArrayList<ContactItem> contactItemArrayList;
+    public static ArrayList<ReportItem> reportItemArrayList;
+    public static ArrayList<String> reportsName, reportsSpeciality;
+    public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,7 +169,9 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_sendreferrals, container, false);
 
-            //TODO : Make a backend request for sending the referral when Send button is clicked..
+            //TODO : Change the arguments
+
+            new SendReferral().execute("","","","","","");
 
             return rootView;
         }
@@ -208,9 +222,9 @@ public class MainActivity extends ActionBarActivity {
             };
             recyclerView.setOnScrollListener(onScrollListener);
 
-            ArrayList<ReportItem> reportItemArrayList = new ArrayList<>();
+            reportItemArrayList = new ArrayList<>();
 
-            //TODO : Fill the data to be displayed in this arraylist
+            new GetReports().execute(""); //TODO set this parameter as the doc ID
 
             ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
@@ -237,9 +251,9 @@ public class MainActivity extends ActionBarActivity {
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
 
-            ArrayList<ContactItem> contactItemArrayList = new ArrayList<>();
+            contactItemArrayList = new ArrayList<>();
 
-            //TODO : Fill the data to be displayed in this arraylist
+            new GetContactsList().execute(""); //TODO set this parameter as the doc ID
 
             ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
@@ -261,4 +275,160 @@ public class MainActivity extends ActionBarActivity {
             return rootView;
         }
     }
+
+    public static class GetContactsList extends AsyncTask<String,Void,String>{
+
+        String userId;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            userId = params[0];
+
+            List<NameValuePair> paramsList = new ArrayList<>();
+            paramsList.add(new BasicNameValuePair("doc",userId));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            String response = requestMaker.makeServiceCall(data.urlContacts, ServiceHandler.POST, paramsList);
+
+            try {
+                JSONObject contactsJSOn = new JSONObject(response);
+
+                if(contactsJSOn!=null){
+                    JSONArray contactsArray = new JSONArray(contactsJSOn.getString("contacts"));
+
+                    contactsName = new ArrayList<>();
+                    contactsIDs = new ArrayList<>();
+                    contactsEmail = new ArrayList<>();
+                    contactsPhone = new ArrayList<>();
+                    contactsSpeciality = new ArrayList<>();
+
+                    for(int i=0; i < contactsArray.length();i++){
+                        JSONObject tempJSON = new JSONObject();
+                        tempJSON = contactsArray.getJSONObject(i);
+                        contactsIDs.add(i, tempJSON.getString("id"));
+                        contactsName.add(i, tempJSON.getString("name"));
+                        contactsEmail.add(i, tempJSON.getString("email"));
+                        contactsPhone.add(i, tempJSON.getString("mobile"));
+                        contactsSpeciality.add(i, tempJSON.getString("speciality"));
+                        contactsCity.add(i, tempJSON.getString("city"));
+                        contactsHospital.add(i, tempJSON.getString("hospital"));
+
+                        ContactItem tempContact = new ContactItem("",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),contactsHospital.get(i),contactsCity.get(i),contactsSpeciality.get(i));
+                        //TODO change this to add imageURL
+
+                        contactItemArrayList.add(i, tempContact);
+                    }
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
+    public static class GetReports extends AsyncTask<String,Void,String>{
+
+        String userId;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            userId = params[0];
+
+            List<NameValuePair> paramsList = new ArrayList<>();
+            paramsList.add(new BasicNameValuePair("doc",userId));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            String response = requestMaker.makeServiceCall(data.urlReports, ServiceHandler.POST, paramsList);
+
+            try {
+                JSONObject reportsJSOn = new JSONObject(response);
+
+                if(reportsJSOn!=null){
+                    JSONArray reportsArray = new JSONArray(reportsJSOn.getString("reports"));
+
+                    reportsName = new ArrayList<>();
+                    reportsReceivedApproved = new ArrayList<>();
+                    reportsReceivedDeclined = new ArrayList<>();
+                    reportsSentDeclined = new ArrayList<>();
+                    reportsSentApproved = new ArrayList<>();
+                    reportsSpeciality = new ArrayList<>();
+
+                    for(int i=0; i < reportsArray.length();i++){
+                        JSONObject tempJSON = new JSONObject();
+                        tempJSON = reportsArray.getJSONObject(i);
+
+                        String name, speciality;
+                        Integer rec_app,sent_app,rec_dec,sent_dec;
+
+                        name = tempJSON.getString("name");
+                        speciality = tempJSON.getString("speciality");
+                        rec_app = tempJSON.getInt("rec_approved");
+                        rec_dec = tempJSON.getInt("rec_declined");
+                        sent_app = tempJSON.getInt("sent_approved");
+                        sent_dec = tempJSON.getInt("sent_declined");
+
+                        reportsName.add(i, name);
+                        reportsSpeciality.add(i, speciality);
+                        reportsSentApproved.add(i, sent_app);
+                        reportsSentDeclined.add(i, sent_dec);
+                        reportsReceivedDeclined.add(i, rec_dec);
+                        reportsReceivedApproved.add(i, rec_app);
+
+                        ReportItem tempReport = new ReportItem(name,sent_app,sent_dec,rec_app,rec_dec);
+                        reportItemArrayList.add(i, tempReport);
+                    }
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
+    public static class SendReferral extends AsyncTask<String,Void,String>{
+
+        private String senderId, receiverId, patientName, patientMobile, reason, message;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            senderId = params[0];
+            receiverId = params[1];
+            patientName = params[2];
+            patientMobile = params[3];
+            reason = params[4];
+            message = params[5];
+
+            List<NameValuePair> paramsList = new ArrayList<>();
+
+            paramsList.add(new BasicNameValuePair("sender",senderId));
+            paramsList.add(new BasicNameValuePair("receiver",receiverId));
+            paramsList.add(new BasicNameValuePair("name",patientName));
+            paramsList.add(new BasicNameValuePair("mbl",patientMobile));
+            paramsList.add(new BasicNameValuePair("reason",reason));
+            paramsList.add(new BasicNameValuePair("message",message));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            String response = requestMaker.makeServiceCall(data.urlSendReferral, ServiceHandler.POST, paramsList);
+
+            try {
+                JSONObject sendReferralJSON = new JSONObject(response);
+                Log.d("sendReferralJSON",String.valueOf(sendReferralJSON));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
 }
