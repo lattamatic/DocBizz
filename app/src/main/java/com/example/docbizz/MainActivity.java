@@ -117,6 +117,7 @@ public class MainActivity extends ActionBarActivity {
             getSupportFragmentManager().findFragmentById(R.id.frame_container)
                     .getView()
                     .setLayoutParams(lp);
+        setTitle(data.navtitles[position].getTitle());
 
         switch (position) {
             case 0 :
@@ -229,6 +230,18 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_help, container, false);
+
+            TextView txtHelp = (TextView) rootView.findViewById(R.id.txtHelp);
+
+            txtHelp.setText("Send referral : Allows you to send referrals to other doctors using this app.\n" +
+                    "\nIf the doctor to whom you want to send referral is not using this app, just go to Contacts(on Home Page) then click on Invite.\n" +
+                    "You can invite using whatsapp, gmail,facebook etc." +
+                    "\nA pre feeded message will go to doctors whom you want to invite and they can easily install the app.\n" +
+                    "\n" +
+                    "Referrals(on Home page) :  Allows you to see your inbox and referrals sent.\nJust click on any referral in your inbox and you can approve or decline the referral. You can also reply back\n" +
+                    "\n" +
+                    "Reports(on Home Page) : Generates a report automatically of your referrals sent, received, approved and declined.");
+
             return rootView;
         }
     }
