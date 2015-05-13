@@ -77,8 +77,11 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onMessage(Context context, Intent intent) {
         Log.d(TAG, "onMessage - context: " + context);
         String type = intent.getStringExtra("type");
-        String message = "", title = "";
+        String text = intent.getStringExtra("text"), title = intent.getStringExtra("title");
         // make notifications here
+        Log.i("gcm", "received");
+
+        notify(title, text);
 
     }
 
