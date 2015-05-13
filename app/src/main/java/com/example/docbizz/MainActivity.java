@@ -101,6 +101,17 @@ public class MainActivity extends ActionBarActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("DocBizz", MODE_PRIVATE);
         String id = sharedPreferences.getString("id","");
+        String strUser = sharedPreferences.getString("user", "{}");
+
+        TextView profilepic_name = (TextView) findViewById(R.id.profilepic_name);
+
+        try {
+            JSONObject userObj = new JSONObject(strUser);
+            profilepic_name.setText(userObj.getString("name"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         new GetContactsList().execute(id, "Main");
 
         //Toast.makeText(getApplicationContext(), id, Toast.LENGTH_SHORT).show();
@@ -152,28 +163,6 @@ public class MainActivity extends ActionBarActivity {
             drawerList.setItemChecked(position, true);
             drawerLayout.closeDrawer(Gravity.START);
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**
