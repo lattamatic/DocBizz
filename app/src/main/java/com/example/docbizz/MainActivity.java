@@ -281,6 +281,8 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
 
+            //TODO : write the corresponding JAVA code for linking them with the backend..
+
             return rootView;
         }
     }
