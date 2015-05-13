@@ -235,7 +235,7 @@ public class MainActivity extends ActionBarActivity {
             String id = sharedPreferences.getString("id", "");
             new GetReports().execute(id, rLimit + "", rOffset + "");
 
-            ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
+            final ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
 
             return rootView;
@@ -244,8 +244,6 @@ public class MainActivity extends ActionBarActivity {
 
     public static class ContactsFragment extends Fragment {
 
-        static RecyclerView recyclerView;
-        static ContactRecyclerViewAdapter adapter;
         static android.os.Handler mHandler;
 
         public ContactsFragment() {
@@ -256,7 +254,7 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
 
-            recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContacts);
+            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContacts);
             final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
 
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -269,8 +267,8 @@ public class MainActivity extends ActionBarActivity {
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             String id = sharedPreferences.getString("id", "");
 
-            ContactsFragment.adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
-            ContactsFragment.recyclerView.setAdapter(ContactsFragment.adapter);
+            final ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
+            recyclerView.setAdapter(adapter);
 
             new GetContactsList().execute(id);
 
