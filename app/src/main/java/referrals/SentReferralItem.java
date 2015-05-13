@@ -67,7 +67,6 @@ public class SentReferralItem extends Fragment {
                     MainActivity.sentAdapter.notifyDataSetChanged();
                     MainActivity.sentAdapter.notifyItemRangeInserted(0,msg.arg2-1);
                     MainActivity.sentAdapter.notifyItemRangeChanged(0,msg.arg2-1);
-                    Log.i("sentItem",MainActivity.sentItemsList.get(0).doctorName);
                     Log.i("sentAdapterItemCount", String.valueOf(MainActivity.sentAdapter.getItemCount()));
                     Log.i("Inside", "sentHandler");
                 }

@@ -5,18 +5,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -53,7 +55,7 @@ public class Home extends ActionBarActivity {
                 LayoutInflater layoutInflater = LayoutInflater.from(context);
                 View loginView = layoutInflater.inflate(R.layout.dialog_login, null);
 
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Home.this);
                 alertDialogBuilder.setView(loginView);
 
                 final EditText editTextEmail = (EditText) loginView.findViewById(R.id.editTextEmail);
@@ -63,7 +65,9 @@ public class Home extends ActionBarActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        ServiceHandler requestMaker = new ServiceHandler();
+                        Log.i("Inside", "OnClick");
+
+                        /*ServiceHandler requestMaker = new ServiceHandler();
 
                         List<NameValuePair> params = new ArrayList<NameValuePair>();
                         params.add(new BasicNameValuePair("email", editTextEmail.getText().toString()));
@@ -74,7 +78,9 @@ public class Home extends ActionBarActivity {
                         try {
                             JSONObject responseObject = new JSONObject(response);
 
+                            Log.i("responseObj", String.valueOf(responseObject));
                             if (responseObject.getBoolean("result")) {
+
                                 SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
                                 sharedPreferencesEditor.putString("user", responseObject.getJSONObject("data").toString());
                                 sharedPreferencesEditor.commit();
@@ -82,22 +88,71 @@ public class Home extends ActionBarActivity {
                                 Intent intent = new Intent(Home.this, MainActivity.class);
                                 startActivity(intent);
                                 finish();
-                            }
-                            else {
+                            } else {
                                 Toast.makeText(getApplicationContext(), "Incorrect Email/Password", Toast.LENGTH_SHORT).show();
                             }
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
-                        }
+                        }*/
+
+                        new LoginTask().execute(editTextEmail.getText().toString(), editTextPassword.getText().toString());
                     }
                 });
+                alertDialogBuilder.create().show();
             }
         });
 
     }
 
+    public class LoginTask extends AsyncTask<String,Void,String> {
+
+        String email, password;
+        boolean loginSuccess = false;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            ServiceHandler requestMakerLogin = new ServiceHandler();
+
+            email = params[0];
+            password = params[1];
+
+            List<NameValuePair> paramsLogin = new ArrayList<NameValuePair>();
+            paramsLogin.add(new BasicNameValuePair("email", email));
+            paramsLogin.add(new BasicNameValuePair("password", password));
+
+            String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
+            try {
+                JSONObject responseLoginObject = new JSONObject(responseLogin);
+
+                SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+                try {
+                    sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
+                    sharedPreferencesEditor.putString("id", responseLoginObject.getJSONObject("data").getString("id"));
+                    MainActivity.doctorID = responseLoginObject.getJSONObject("data").getString("id");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                sharedPreferencesEditor.commit();
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            Intent intent = new Intent(Home.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String res){
+            super.onPostExecute(res);
+
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

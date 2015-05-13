@@ -15,6 +15,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.telephony.gsm.SmsManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -407,6 +408,12 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    public void sendSMS(String phoneNumber, String message)
+    {
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage(phoneNumber, null, message, null, null);
+    }
+
     public static class GetContactsList extends AsyncTask<String,Void,String>{
 
         String userId;
@@ -434,6 +441,8 @@ public class MainActivity extends ActionBarActivity {
                     contactsEmail = new ArrayList<>();
                     contactsPhone = new ArrayList<>();
                     contactsSpeciality = new ArrayList<>();
+                    contactsCity = new ArrayList<>();
+                    contactsHospital = new ArrayList<>();
 
                     for(int i=0; i < contactsArray.length();i++){
                         JSONObject tempJSON = new JSONObject();
@@ -443,12 +452,10 @@ public class MainActivity extends ActionBarActivity {
                         contactsEmail.add(i, tempJSON.getString("email"));
                         contactsPhone.add(i, tempJSON.getString("mobile"));
                         contactsSpeciality.add(i, tempJSON.getString("speciality"));
-                        //TODO : uncomment this..
-                        //contactsCity.add(i, tempJSON.getString("city"));
-                        //contactsHospital.add(i, tempJSON.getString("hospital"));
+                        contactsCity.add(i, tempJSON.getString("city"));
+                        contactsHospital.add(i, tempJSON.getString("hospital"));
 
-                        //Change this
-                        ContactItem tempContact = new ContactItem(contactsIDs.get(i),"",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),"","",contactsSpeciality.get(i));
+                        ContactItem tempContact = new ContactItem(contactsIDs.get(i),"",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),contactsHospital.get(i),contactsCity.get(i),contactsSpeciality.get(i));
                         //TODO change this to add imageURL
 
                         contactItemArrayList.add(i, tempContact);
