@@ -103,6 +103,8 @@ public class MainActivity extends ActionBarActivity {
         String id = sharedPreferences.getString("id","");
         new GetContactsList().execute(id, "Main");
 
+        //Toast.makeText(getApplicationContext(), id, Toast.LENGTH_SHORT).show();
+
     }
 
     private void selectItem(int position) {
