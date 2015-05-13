@@ -26,5 +26,6 @@
     <string name="title_activity_home">Home</string>
     <string name="title_activity_incoming_referral_details">IncomingReferralDetails</string>
     <string name="title_activity_sent_referral_details">SentReferralDetails</string>
+    <string name="title_activity_invite_fragment">InviteFragment</string>
 
 </resources>

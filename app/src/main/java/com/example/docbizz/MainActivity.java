@@ -1,12 +1,19 @@
 package com.example.docbizz;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -74,6 +81,10 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
     public static Handler inboxHandler, sentHandler;
+    public String inviteName, invitePhone;
+    final int CONTACT_KEY = 1;
+    int currentFragment = 0;
+    String inviteMessage1 = "Hello ", inviteMessage2 = ", try out this cool app ", inviteMessage3 = ""; //TODO inviteMessage3 contains playstore URL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +128,7 @@ public class MainActivity extends ActionBarActivity {
         contactItemArrayList = new ArrayList<>();
 
         SharedPreferences sharedPreferences = getSharedPreferences("DocBizz", MODE_PRIVATE);
-        String id = sharedPreferences.getString("id","");
+        String id = sharedPreferences.getString("id", "");
         String strUser = sharedPreferences.getString("user", "{}");
 
         TextView profilepic_name = (TextView) findViewById(R.id.profilepic_name);
@@ -141,33 +152,42 @@ public class MainActivity extends ActionBarActivity {
         final android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         final Fragment f = fragmentManager.findFragmentById(R.id.frame_container);
 
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0,0,0);
-            getSupportFragmentManager().findFragmentById(R.id.frame_container)
-                    .getView()
-                    .setLayoutParams(lp);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0, 0, 0);
+        getSupportFragmentManager().findFragmentById(R.id.frame_container)
+                .getView()
+                .setLayoutParams(lp);
         setTitle(data.navtitles[position].getTitle());
 
         switch (position) {
-            case 0 :
+            case 0:
                 fragmentTransaction.replace(R.id.frame_container, new SendReferralsFragment());
+                currentFragment = 0;
                 break;
 
-            case 1 :
+            case 1:
                 fragmentTransaction.replace(R.id.frame_container, new ReferralsFragment());
+                currentFragment = 1;
                 break;
 
-            case 2 :
+            case 2:
                 fragmentTransaction.replace(R.id.frame_container, new ReportFragment());
+                currentFragment = 2;
                 break;
 
-            case 3 :
+            case 3:
                 fragmentTransaction.replace(R.id.frame_container, new ContactsFragment());
+                currentFragment = 3;
                 break;
 
-            case 4 :
+            case 4:
+                Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(contactIntent,CONTACT_KEY);
+
+            case 5:
                 fragmentTransaction.replace(R.id.frame_container, new HelpFragment());
+                currentFragment = 5;
                 break;
-            case 5 :
+            case 6 :
                 SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
                 sharedPreferencesEditor.remove("user");
                 sharedPreferencesEditor.remove("id");
@@ -193,6 +213,62 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    public void onActivityResult(int reqCode, int resultCode, Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+
+        switch (reqCode) {
+            case (CONTACT_KEY) :
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri contactData = data.getData();
+                    ContentResolver cr = getContentResolver();
+                        Cursor c =  managedQuery(contactData, null, null, null, null);
+                    if (c.moveToFirst()) {
+                        inviteName = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                        String id = c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
+                        if (Integer.parseInt(c.getString(
+                                c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                            Cursor pCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",new String[]{id}, null);
+                            while (pCur.moveToNext()) {
+                                invitePhone = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            }
+                            pCur.close();
+                        }
+                        Log.i("inviteName",inviteName);
+                        Log.i("invitePhone",invitePhone);
+                    }
+
+                    if(invitePhone!=null&&inviteName!=null) {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                        alert.setTitle("Do you wish to invite "+inviteName+" ?");
+                        alert.setMessage("You will incur message charges as per your plan");
+                        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                sendSMS(invitePhone, inviteMessage1 + inviteName + inviteMessage2 + inviteMessage3);
+                            }
+                        });
+                        alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                                dialog.dismiss();
+                            }
+                        });
+                        alert.create().show();
+                    }
+                    selectItem(currentFragment);
+
+                }
+                break;
+        }
+    }
+
+    public void sendSMS(String phoneNumber, String message) {
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage(phoneNumber, null, message, null, null);
+    }
+
     /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -215,6 +291,7 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 */
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -247,11 +324,11 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View v) {
 
                     String selectedDoctor = autoCompleteTextViewToDoctor.getText().toString();
-                    ContactItem item = contactItemArrayList.get( contactsName.indexOf(selectedDoctor));
+                    ContactItem item = contactItemArrayList.get(contactsName.indexOf(selectedDoctor));
 
                     Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
-                    new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
-                            editPatientReason.getText().toString(),editPatientMessage.getText().toString());
+                    new SendReferral().execute(id, item.id, editPatientName.getText().toString(), editPatientContactNumber.getText().toString(),
+                            editPatientReason.getText().toString(), editPatientMessage.getText().toString());
 
 
                 }
@@ -260,6 +337,7 @@ public class MainActivity extends ActionBarActivity {
             return rootView;
         }
     }
+
     public static class HelpFragment extends Fragment {
 
         public HelpFragment() {
@@ -284,6 +362,7 @@ public class MainActivity extends ActionBarActivity {
             return rootView;
         }
     }
+
     public static class ReportFragment extends Fragment {
 
         static android.os.Handler mHandler;
@@ -317,7 +396,8 @@ public class MainActivity extends ActionBarActivity {
             recyclerView.setAdapter(adapter);
 
             mHandler = new android.os.Handler() {
-                @Override public void handleMessage(Message msg) {
+                @Override
+                public void handleMessage(Message msg) {
                     adapter.notifyDataSetChanged();
                 }
             };
@@ -357,7 +437,8 @@ public class MainActivity extends ActionBarActivity {
             new GetContactsList().execute(id, "Contacts");
 
             mHandler = new android.os.Handler() {
-                @Override public void handleMessage(Message msg) {
+                @Override
+                public void handleMessage(Message msg) {
                     adapter.notifyDataSetChanged();
                 }
             };
@@ -382,7 +463,7 @@ public class MainActivity extends ActionBarActivity {
             sentItemsList = new ArrayList<>();
 
             mViewPager = (ViewPager) rootView.findViewById(R.id.pager);
-            customAdapter = new ViewPagerAdapter(getActivity().getApplicationContext(),getActivity().getSupportFragmentManager());
+            customAdapter = new ViewPagerAdapter(getActivity().getApplicationContext(), getActivity().getSupportFragmentManager());
 
             mViewPager.setAdapter(customAdapter);
             mViewPager.setCurrentItem(0);
@@ -401,10 +482,9 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onPageSelected(int position) {
                     mViewPager.setCurrentItem(position);
-                    if(position==0){
-                        new LoadInbox().execute(id,String.valueOf(0),String.valueOf(10));
-                    }
-                    else if(position==1){
+                    if (position == 0) {
+                        new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
+                    } else if (position == 1) {
                         new LoadSent().execute(id, String.valueOf(0), String.valueOf(10));
                     }
 
@@ -420,356 +500,349 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void sendSMS(String phoneNumber, String message)
-    {
-        SmsManager sms = SmsManager.getDefault();
-        sms.sendTextMessage(phoneNumber, null, message, null, null);
-    }
+        public static class GetContactsList extends AsyncTask<String, Void, String> {
 
-    public static class GetContactsList extends AsyncTask<String,Void,String>{
+            String userId;
 
-        String userId;
+            @Override
+            protected String doInBackground(String... params) {
 
-        @Override
-        protected String doInBackground(String... params) {
+                userId = params[0];
 
-            userId = params[0];
+                List<NameValuePair> paramsList = new ArrayList<>();
+                paramsList.add(new BasicNameValuePair("doc", userId));
 
-            List<NameValuePair> paramsList = new ArrayList<>();
-            paramsList.add(new BasicNameValuePair("doc",userId));
+                ServiceHandler requestMaker = new ServiceHandler();
 
-            ServiceHandler requestMaker = new ServiceHandler();
+                String response = requestMaker.makeServiceCall(data.urlContacts, ServiceHandler.POST, paramsList);
 
-            String response = requestMaker.makeServiceCall(data.urlContacts, ServiceHandler.POST, paramsList);
+                try {
+                    JSONObject contactsJSOn = new JSONObject(response);
 
-            try {
-                JSONObject contactsJSOn = new JSONObject(response);
+                    if (contactsJSOn != null) {
+                        JSONArray contactsArray = new JSONArray(contactsJSOn.getString("contacts"));
 
-                if(contactsJSOn!=null){
-                    JSONArray contactsArray = new JSONArray(contactsJSOn.getString("contacts"));
+                        contactsName = new ArrayList<>();
+                        contactsIDs = new ArrayList<>();
+                        contactsEmail = new ArrayList<>();
+                        contactsPhone = new ArrayList<>();
+                        contactsSpeciality = new ArrayList<>();
+                        contactsCity = new ArrayList<>();
+                        contactsHospital = new ArrayList<>();
 
-                    contactsName = new ArrayList<>();
-                    contactsIDs = new ArrayList<>();
-                    contactsEmail = new ArrayList<>();
-                    contactsPhone = new ArrayList<>();
-                    contactsSpeciality = new ArrayList<>();
-                    contactsCity = new ArrayList<>();
-                    contactsHospital = new ArrayList<>();
+                        for (int i = 0; i < contactsArray.length(); i++) {
+                            JSONObject tempJSON = new JSONObject();
+                            tempJSON = contactsArray.getJSONObject(i);
+                            contactsIDs.add(i, tempJSON.getString("id"));
+                            contactsName.add(i, tempJSON.getString("name"));
+                            contactsEmail.add(i, tempJSON.getString("email"));
+                            contactsPhone.add(i, tempJSON.getString("mobile"));
+                            contactsSpeciality.add(i, tempJSON.getString("speciality"));
+                            contactsCity.add(i, tempJSON.getString("city"));
+                            contactsHospital.add(i, tempJSON.getString("hospital"));
 
-                    for(int i=0; i < contactsArray.length();i++){
-                        JSONObject tempJSON = new JSONObject();
-                        tempJSON = contactsArray.getJSONObject(i);
-                        contactsIDs.add(i, tempJSON.getString("id"));
-                        contactsName.add(i, tempJSON.getString("name"));
-                        contactsEmail.add(i, tempJSON.getString("email"));
-                        contactsPhone.add(i, tempJSON.getString("mobile"));
-                        contactsSpeciality.add(i, tempJSON.getString("speciality"));
-                        contactsCity.add(i, tempJSON.getString("city"));
-                        contactsHospital.add(i, tempJSON.getString("hospital"));
+                            ContactItem tempContact = new ContactItem(contactsIDs.get(i), "", contactsName.get(i), contactsPhone.get(i), contactsEmail.get(i), contactsHospital.get(i), contactsCity.get(i), contactsSpeciality.get(i));
+                            //TODO change this to add imageURL
 
-                        ContactItem tempContact = new ContactItem(contactsIDs.get(i),"",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),contactsHospital.get(i),contactsCity.get(i),contactsSpeciality.get(i));
-                        //TODO change this to add imageURL
+                            contactItemArrayList.add(i, tempContact);
+                        }
+                        Log.i("str", "sr");
 
-                        contactItemArrayList.add(i, tempContact);
+                        if (params[1].equals("Contacts")) {
+                            ContactsFragment.mHandler.sendEmptyMessage(1);
+                        }
                     }
-                    Log.i("str", "sr");
-
-                    if(params[1].equals("Contacts")) {
-                        ContactsFragment.mHandler.sendEmptyMessage(1);
-                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+                return null;
+            }
+        }
+
+        public static class LoadInbox extends AsyncTask<String, Void, String> {
+
+            String userId, response;
+            int start, end;
+            boolean loadInboxSuccess = false;
+
+            @Override
+            protected void onPreExecute() {
+                loadInboxProgress.setMessage("Loading Inbox...");
+                loadInboxProgress.show();
+
+                Log.i("Inside", "LoadInbox");
             }
 
-            return null;
-        }
-    }
+            @Override
+            protected String doInBackground(String... params) {
 
-    public static class LoadInbox extends AsyncTask<String,Void,String>{
+                userId = params[0];
+                start = Integer.parseInt(params[1]);
+                end = Integer.parseInt(params[2]);
 
-        String userId, response;
-        int start, end;
-        boolean loadInboxSuccess = false;
+                List<NameValuePair> paramsList = new ArrayList<>();
+                paramsList.add(new BasicNameValuePair("receiver", userId));
 
-        @Override
-        protected void onPreExecute(){
-            loadInboxProgress.setMessage("Loading Inbox...");
-            loadInboxProgress.show();
+                ServiceHandler requestMaker = new ServiceHandler();
 
-            Log.i("Inside","LoadInbox");
-        }
+                response = requestMaker.makeServiceCall(data.urlInbox, ServiceHandler.POST, paramsList);
 
-        @Override
-        protected String doInBackground(String... params) {
+                try {
+                    JSONObject inboxJSON = new JSONObject(response);
 
-            userId = params[0];
-            start = Integer.parseInt(params[1]);
-            end = Integer.parseInt(params[2]);
+                    if (inboxJSON != null) {
+                        loadInboxSuccess = true;
 
-            List<NameValuePair> paramsList = new ArrayList<>();
-            paramsList.add(new BasicNameValuePair("receiver",userId));
+                        JSONArray inboxArray = new JSONArray(inboxJSON.getString("inbox"));
+                        String ID, name, reason, senderID;
 
-            ServiceHandler requestMaker = new ServiceHandler();
+                        Log.i("inboxJSON", String.valueOf(inboxArray));
 
-            response = requestMaker.makeServiceCall(data.urlInbox, ServiceHandler.POST, paramsList);
+                        inboxIDs = new ArrayList<>();
+                        inboxName = new ArrayList<>();
+                        inboxReason = new ArrayList<>();
+                        inboxSenderID = new ArrayList<>();
+                        inboxItemsList = new ArrayList<>();
 
-            try {
-                JSONObject inboxJSON = new JSONObject(response);
+                        for (int i = 0; i < inboxArray.length(); i++) {
+                            JSONObject tempJSON = new JSONObject();
+                            tempJSON = inboxArray.getJSONObject(i);
+                            ID = tempJSON.getString("id");
+                            name = tempJSON.getString("name");
+                            reason = tempJSON.getString("reason");
+                            senderID = tempJSON.getString("sender");
+                            inboxIDs.add(i, ID);
+                            inboxName.add(i, name);
+                            inboxSenderID.add(i, senderID);
+                            inboxReason.add(i, reason);
 
-                if(inboxJSON!=null){
-                    loadInboxSuccess = true;
+                            //TODO change the arguments below
+                            inboxItemsList.add(i, new ReferralItem("", name, "", "", reason, "", new ArrayList<messages.Message>(), ""));
+                        }
 
-                    JSONArray inboxArray = new JSONArray(inboxJSON.getString("inbox"));
-                    String ID,name,reason,senderID;
-
-                    Log.i("inboxJSON", String.valueOf(inboxArray));
-
-                    inboxIDs = new ArrayList<>();
-                    inboxName = new ArrayList<>();
-                    inboxReason = new ArrayList<>();
-                    inboxSenderID = new ArrayList<>();
-                    inboxItemsList = new ArrayList<>();
-
-                    for(int i=0; i < inboxArray.length();i++) {
-                        JSONObject tempJSON = new JSONObject();
-                        tempJSON = inboxArray.getJSONObject(i);
-                        ID = tempJSON.getString("id");
-                        name = tempJSON.getString("name");
-                        reason = tempJSON.getString("reason");
-                        senderID = tempJSON.getString("sender");
-                        inboxIDs.add(i, ID);
-                        inboxName.add(i, name);
-                        inboxSenderID.add(i, senderID);
-                        inboxReason.add(i, reason);
-
-                        //TODO change the arguments below
-                        inboxItemsList.add(i, new ReferralItem("",name,"","",reason,"",new ArrayList<messages.Message>(),""));
-                    }
-
-                }
-                else
+                    } else
+                        loadInboxSuccess = false;
+                } catch (JSONException e) {
+                    e.printStackTrace();
                     loadInboxSuccess = false;
-            } catch (JSONException e) {
-                e.printStackTrace();
-                loadInboxSuccess = false;
-            }
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String res){
-            super.onPostExecute(res);
-            if(loadInboxProgress!=null&&loadInboxProgress.isShowing()) {
-                loadInboxProgress.hide();
-                loadInboxProgress.cancel();
-            }
-            if(loadInboxSuccess){
-                Message msg = new Message();
-                msg.arg1=1;
-                msg.arg2=inboxItemsList.size();
-                inboxHandler.sendMessage(msg);
-            }
-        }
-
-    }
-
-    public static class LoadSent extends AsyncTask<String,Void,String>{
-
-        String userId, response;
-        int start, end;
-        boolean loadSentSuccess = false;
-
-        @Override
-        protected void onPreExecute(){
-            loadSentProgress.setMessage("Loading Sent...");
-            loadSentProgress.show();
-            Log.i("Inside","LoadSent");
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            userId = params[0];
-            start = Integer.parseInt(params[1]);
-            end = Integer.parseInt(params[2]);
-
-            Log.i("userId",userId);
-
-            List<NameValuePair> paramsList = new ArrayList<>();
-            paramsList.add(new BasicNameValuePair("sender",userId));
-
-            ServiceHandler requestMaker = new ServiceHandler();
-
-            response = requestMaker.makeServiceCall(data.urlSent, ServiceHandler.POST, paramsList);
-
-            try {
-                JSONObject inboxJSON = new JSONObject(response);
-
-                if(inboxJSON!=null){
-                    loadSentSuccess = true;
-
-                    JSONArray sentArray = new JSONArray(inboxJSON.getString("sent"));
-                    String ID,name,status,receiverID;
-
-                    Log.i("sentArray", String.valueOf(sentArray));
-                    sentIDs = new ArrayList<>();
-                    sentName = new ArrayList<>();
-                    sentStatus = new ArrayList<>();
-                    sentReceiverIDs = new ArrayList<>();
-                    sentItemsList = new ArrayList<>();
-
-                    for(int i=0; i < sentArray.length();i++) {
-                        JSONObject tempJSON = new JSONObject();
-                        tempJSON = sentArray.getJSONObject(i);
-                        ID = tempJSON.getString("id");
-                        name = tempJSON.getString("name");
-                        status = tempJSON.getString("status");
-                        receiverID = tempJSON.getString("receiver");
-                        sentIDs.add(i, ID);
-                        sentName.add(i, name);
-                        sentReceiverIDs.add(i, receiverID);
-                        sentStatus.add(i, status);
-
-                        //TODO change the arguments below
-                        sentItemsList.add(i, new ReferralItem("",name,"","","",status,new ArrayList<messages.Message>(),""));
-                    }
-
                 }
-                else
+
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String res) {
+                super.onPostExecute(res);
+                if (loadInboxProgress != null && loadInboxProgress.isShowing()) {
+                    loadInboxProgress.hide();
+                    loadInboxProgress.cancel();
+                }
+                if (loadInboxSuccess) {
+                    Message msg = new Message();
+                    msg.arg1 = 1;
+                    msg.arg2 = inboxItemsList.size();
+                    inboxHandler.sendMessage(msg);
+                }
+            }
+
+        }
+
+        public static class LoadSent extends AsyncTask<String, Void, String> {
+
+            String userId, response;
+            int start, end;
+            boolean loadSentSuccess = false;
+
+            @Override
+            protected void onPreExecute() {
+                loadSentProgress.setMessage("Loading Sent...");
+                loadSentProgress.show();
+                Log.i("Inside", "LoadSent");
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+
+                userId = params[0];
+                start = Integer.parseInt(params[1]);
+                end = Integer.parseInt(params[2]);
+
+                Log.i("userId", userId);
+
+                List<NameValuePair> paramsList = new ArrayList<>();
+                paramsList.add(new BasicNameValuePair("sender", userId));
+
+                ServiceHandler requestMaker = new ServiceHandler();
+
+                response = requestMaker.makeServiceCall(data.urlSent, ServiceHandler.POST, paramsList);
+
+                try {
+                    JSONObject inboxJSON = new JSONObject(response);
+
+                    if (inboxJSON != null) {
+                        loadSentSuccess = true;
+
+                        JSONArray sentArray = new JSONArray(inboxJSON.getString("sent"));
+                        String ID, name, status, receiverID;
+
+                        Log.i("sentArray", String.valueOf(sentArray));
+                        sentIDs = new ArrayList<>();
+                        sentName = new ArrayList<>();
+                        sentStatus = new ArrayList<>();
+                        sentReceiverIDs = new ArrayList<>();
+                        sentItemsList = new ArrayList<>();
+
+                        for (int i = 0; i < sentArray.length(); i++) {
+                            JSONObject tempJSON = new JSONObject();
+                            tempJSON = sentArray.getJSONObject(i);
+                            ID = tempJSON.getString("id");
+                            name = tempJSON.getString("name");
+                            status = tempJSON.getString("status");
+                            receiverID = tempJSON.getString("receiver");
+                            sentIDs.add(i, ID);
+                            sentName.add(i, name);
+                            sentReceiverIDs.add(i, receiverID);
+                            sentStatus.add(i, status);
+
+                            //TODO change the arguments below
+                            sentItemsList.add(i, new ReferralItem("", name, "", "", "", status, new ArrayList<messages.Message>(), ""));
+                        }
+
+                    } else
+                        loadSentSuccess = false;
+                } catch (JSONException e) {
+                    e.printStackTrace();
                     loadSentSuccess = false;
-            } catch (JSONException e) {
-                e.printStackTrace();
-                loadSentSuccess = false;
-            }
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String res){
-            super.onPostExecute(res);
-            if(loadSentProgress!=null&&loadSentProgress.isShowing()){
-                loadSentProgress.hide();
-                loadSentProgress.cancel();
-            }
-            if(loadSentSuccess){
-                Message msg = new Message();
-                msg.arg1 = 1;
-                msg.arg2 = sentItemsList.size();
-                sentHandler.sendMessage(msg);
-            }
-        }
-
-    }
-
-    public static class GetReports extends AsyncTask<String,Void,String>{
-
-        String userId;
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            userId = params[0];
-
-            List<NameValuePair> paramsList = new ArrayList<>();
-            paramsList.add(new BasicNameValuePair("doc",userId));
-
-            ServiceHandler requestMaker = new ServiceHandler();
-
-            String response = requestMaker.makeServiceCall(data.urlReports, ServiceHandler.POST, paramsList);
-
-            try {
-                JSONObject reportsJSOn = new JSONObject(response);
-
-                if(reportsJSOn!=null){
-                    JSONArray reportsArray = new JSONArray(reportsJSOn.getString("reports"));
-
-                    reportsName = new ArrayList<>();
-                    reportsReceivedApproved = new ArrayList<>();
-                    reportsReceivedDeclined = new ArrayList<>();
-                    reportsSentDeclined = new ArrayList<>();
-                    reportsSentApproved = new ArrayList<>();
-                    reportsSpeciality = new ArrayList<>();
-
-                    for(int i=0; i < reportsArray.length();i++){
-                        JSONObject tempJSON = new JSONObject();
-                        tempJSON = reportsArray.getJSONObject(i);
-
-                        String name, speciality;
-                        Integer rec_app,sent_app,rec_dec,sent_dec;
-
-                        name = tempJSON.getString("name");
-                        speciality = tempJSON.getString("speciality");
-                        rec_app = tempJSON.getInt("rec_approved");
-                        rec_dec = tempJSON.getInt("rec_declined");
-                        sent_app = tempJSON.getInt("sent_approved");
-                        sent_dec = tempJSON.getInt("sent_declined");
-
-                        reportsName.add(i, name);
-                        reportsSpeciality.add(i, speciality);
-                        reportsSentApproved.add(i, sent_app);
-                        reportsSentDeclined.add(i, sent_dec);
-                        reportsReceivedDeclined.add(i, rec_dec);
-                        reportsReceivedApproved.add(i, rec_app);
-
-                        ReportItem tempReport = new ReportItem(name,sent_app,sent_dec,rec_app,rec_dec);
-                        reportItemArrayList.add(i, tempReport);
-                    }
-
-                    ReportFragment.mHandler.sendEmptyMessage(1);
-
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+
+                return null;
             }
 
-            return null;
-        }
-    }
-
-    public static class SendReferral extends AsyncTask<String,Void,String>{
-
-        private String senderId, receiverId, patientName, patientMobile, reason, message;
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            senderId = params[0];
-            receiverId = params[1];
-            patientName = params[2];
-            patientMobile = params[3];
-            reason = params[4];
-            message = params[5];
-
-            Log.i("receiverId",receiverId);
-            Log.i("senderId",senderId);
-
-            List<NameValuePair> paramsList = new ArrayList<>();
-
-            paramsList.add(new BasicNameValuePair("sender",senderId));
-            paramsList.add(new BasicNameValuePair("receiver",receiverId));
-            paramsList.add(new BasicNameValuePair("name",patientName));
-            paramsList.add(new BasicNameValuePair("mbl",patientMobile));
-            paramsList.add(new BasicNameValuePair("reason",reason));
-            paramsList.add(new BasicNameValuePair("message",message));
-
-            ServiceHandler requestMaker = new ServiceHandler();
-
-            String response = requestMaker.makeServiceCall(data.urlSendReferral, ServiceHandler.POST, paramsList);
-
-            try {
-                JSONObject sendReferralJSON = new JSONObject(response);
-                Log.d("sendReferralJSON",String.valueOf(sendReferralJSON));
-            } catch (JSONException e) {
-                e.printStackTrace();
+            @Override
+            protected void onPostExecute(String res) {
+                super.onPostExecute(res);
+                if (loadSentProgress != null && loadSentProgress.isShowing()) {
+                    loadSentProgress.hide();
+                    loadSentProgress.cancel();
+                }
+                if (loadSentSuccess) {
+                    Message msg = new Message();
+                    msg.arg1 = 1;
+                    msg.arg2 = sentItemsList.size();
+                    sentHandler.sendMessage(msg);
+                }
             }
 
-            return null;
         }
+
+        public static class GetReports extends AsyncTask<String, Void, String> {
+
+            String userId;
+
+            @Override
+            protected String doInBackground(String... params) {
+
+                userId = params[0];
+
+                List<NameValuePair> paramsList = new ArrayList<>();
+                paramsList.add(new BasicNameValuePair("doc", userId));
+
+                ServiceHandler requestMaker = new ServiceHandler();
+
+                String response = requestMaker.makeServiceCall(data.urlReports, ServiceHandler.POST, paramsList);
+
+                try {
+                    JSONObject reportsJSOn = new JSONObject(response);
+
+                    if (reportsJSOn != null) {
+                        JSONArray reportsArray = new JSONArray(reportsJSOn.getString("reports"));
+
+                        reportsName = new ArrayList<>();
+                        reportsReceivedApproved = new ArrayList<>();
+                        reportsReceivedDeclined = new ArrayList<>();
+                        reportsSentDeclined = new ArrayList<>();
+                        reportsSentApproved = new ArrayList<>();
+                        reportsSpeciality = new ArrayList<>();
+
+                        for (int i = 0; i < reportsArray.length(); i++) {
+                            JSONObject tempJSON = new JSONObject();
+                            tempJSON = reportsArray.getJSONObject(i);
+
+                            String name, speciality;
+                            Integer rec_app, sent_app, rec_dec, sent_dec;
+
+                            name = tempJSON.getString("name");
+                            speciality = tempJSON.getString("speciality");
+                            rec_app = tempJSON.getInt("rec_approved");
+                            rec_dec = tempJSON.getInt("rec_declined");
+                            sent_app = tempJSON.getInt("sent_approved");
+                            sent_dec = tempJSON.getInt("sent_declined");
+
+                            reportsName.add(i, name);
+                            reportsSpeciality.add(i, speciality);
+                            reportsSentApproved.add(i, sent_app);
+                            reportsSentDeclined.add(i, sent_dec);
+                            reportsReceivedDeclined.add(i, rec_dec);
+                            reportsReceivedApproved.add(i, rec_app);
+
+                            ReportItem tempReport = new ReportItem(name, sent_app, sent_dec, rec_app, rec_dec);
+                            reportItemArrayList.add(i, tempReport);
+                        }
+
+                        ReportFragment.mHandler.sendEmptyMessage(1);
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        }
+
+        public static class SendReferral extends AsyncTask<String, Void, String> {
+
+            private String senderId, receiverId, patientName, patientMobile, reason, message;
+
+            @Override
+            protected String doInBackground(String... params) {
+
+                senderId = params[0];
+                receiverId = params[1];
+                patientName = params[2];
+                patientMobile = params[3];
+                reason = params[4];
+                message = params[5];
+
+                Log.i("receiverId", receiverId);
+                Log.i("senderId", senderId);
+
+                List<NameValuePair> paramsList = new ArrayList<>();
+
+                paramsList.add(new BasicNameValuePair("sender", senderId));
+                paramsList.add(new BasicNameValuePair("receiver", receiverId));
+                paramsList.add(new BasicNameValuePair("name", patientName));
+                paramsList.add(new BasicNameValuePair("mbl", patientMobile));
+                paramsList.add(new BasicNameValuePair("reason", reason));
+                paramsList.add(new BasicNameValuePair("message", message));
+
+                ServiceHandler requestMaker = new ServiceHandler();
+
+                String response = requestMaker.makeServiceCall(data.urlSendReferral, ServiceHandler.POST, paramsList);
+
+                try {
+                    JSONObject sendReferralJSON = new JSONObject(response);
+                    Log.d("sendReferralJSON", String.valueOf(sendReferralJSON));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+        }
+
     }
 
-}
