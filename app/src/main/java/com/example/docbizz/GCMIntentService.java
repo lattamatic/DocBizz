@@ -38,17 +38,19 @@ public class GCMIntentService extends GCMBaseIntentService {
     }
 
 
-    private void notify( String title, String content ){
+    private void notify( String title, String text){
+        Log.i("title", title);
+        Log.i("text", text);
         Uri sound_uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         //builder.setSound(alarmSound);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon( R.drawable.ic_launcher )
                         .setContentTitle( title )
-                        .setContentText( content )
+                        .setContentText( text )
                         .setSound( sound_uri );
 // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, Home.class);
+        Intent resultIntent = new Intent(this, MainActivity.class);
 
 // The stack builder object will contain an artificial back stack for the
 // started Activity.
@@ -76,12 +78,20 @@ public class GCMIntentService extends GCMBaseIntentService {
     @ Override
     protected void onMessage(Context context, Intent intent) {
         Log.d(TAG, "onMessage - context: " + context);
-        String type = intent.getStringExtra("type");
-        String text = intent.getStringExtra("text"), title = intent.getStringExtra("title");
+        String msg = intent.getStringExtra("message");
+        try {
+            JSONObject msgJSON = new JSONObject(msg);
+            String type = msgJSON.getString("type");
+            String text = msgJSON.getString("text");
+            String title = msgJSON.getString("title");
+            notify(title, text);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+
         // make notifications here
         Log.i("gcm", "received");
-
-        notify(title, text);
 
     }
 
