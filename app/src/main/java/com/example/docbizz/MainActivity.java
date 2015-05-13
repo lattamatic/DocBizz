@@ -347,9 +347,8 @@ public class MainActivity extends ActionBarActivity {
                         contactItemArrayList.add(i, tempContact);
                     }
                     Log.i("str", "sr");
-                    Message msg = new Message();
-                    msg.arg1 = 1;
-                    ContactsFragment.mHandler.sendMessage(msg);
+
+                    ContactsFragment.mHandler.sendEmptyMessage(1);
 
                 }
             } catch (JSONException e) {
