@@ -1,11 +1,14 @@
 package com.example.docbizz;
 
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,17 +18,16 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
@@ -36,14 +38,19 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
 import navigationDrawer.NavDrawerItem;
 import navigationDrawer.NavDrawerListAdapter;
+import referrals.ReferralItem;
+import referrals.ReferralRecyclerViewAdapter;
+import referrals.ViewPagerAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
 import util.ServiceHandler;
 import util.data;
+
 
 
 public class MainActivity extends ActionBarActivity {
@@ -173,7 +180,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -194,7 +201,7 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
+*/
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -226,11 +233,9 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onClick(View v) {
 
-                    ContactItem item = contactItemArrayList.get((int) spinnerContactsList.getSelectedItemId());
+                    String selectedDoctor = autoCompleteTextViewToDoctor.getText().toString();
+                    ContactItem item = contactItemArrayList.get( contactsName.indexOf(selectedDoctor));
 
-                    Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + spinnerContactsList.getSelectedItemId(), Toast.LENGTH_SHORT).show();
-                    new SendReferral().execute(id, item.id, editPatientName.getText().toString(), editPatientContactNumber.getText().toString(),
-                            editPatientReason.getText().toString(), editPatientMessage.getText().toString());
                     Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
                     new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
                             editPatientReason.getText().toString(),editPatientMessage.getText().toString());
@@ -273,11 +278,6 @@ public class MainActivity extends ActionBarActivity {
         public ReportFragment() {
         }
 
-        public void loadMoreItems(int rLimit, int rOffset) {
-            rOffset = rOffset + rLimit;
-            //TODO : ping to the same URL with different offset and limit
-        }
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -293,14 +293,6 @@ public class MainActivity extends ActionBarActivity {
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
-
-            RecyclerView.OnScrollListener onScrollListener = new InfiniteRecyclerViewOnScrollListener(layoutManager) {
-                @Override
-                public void onLoadMore() {
-                    loadMoreItems(rLimit, rOffset);
-                }
-            };
-            recyclerView.setOnScrollListener(onScrollListener);
 
             reportItemArrayList = new ArrayList<>();
 
@@ -385,7 +377,7 @@ public class MainActivity extends ActionBarActivity {
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
 
-            new LoadInbox().execute(id,String.valueOf(0),String.valueOf(10));
+            new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
 
             mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                 @Override
@@ -663,13 +655,9 @@ public class MainActivity extends ActionBarActivity {
         protected String doInBackground(String... params) {
 
             userId = params[0];
-            limit = params[1];
-            offset = params[2];
 
             List<NameValuePair> paramsList = new ArrayList<>();
             paramsList.add(new BasicNameValuePair("doc",userId));
-            paramsList.add(new BasicNameValuePair("limit", limit));
-            paramsList.add(new BasicNameValuePair("offset", offset));
 
             ServiceHandler requestMaker = new ServiceHandler();
 
