@@ -1,12 +1,19 @@
 package com.example.docbizz;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -75,6 +82,10 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
+    public String inviteName, invitePhone;
+    final int CONTACT_KEY = 1;
+    int currentFragment = 0;
+    String inviteMessage1 = "Hello ", inviteMessage2 = ", try out this cool app ", inviteMessage3 = ""; //TODO inviteMessage3 contains playstore URL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,33 +150,42 @@ public class MainActivity extends ActionBarActivity {
         final android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         final Fragment f = fragmentManager.findFragmentById(R.id.frame_container);
 
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0,0,0);
-            getSupportFragmentManager().findFragmentById(R.id.frame_container)
-                    .getView()
-                    .setLayoutParams(lp);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0,0,0);
+        getSupportFragmentManager().findFragmentById(R.id.frame_container)
+                .getView()
+                .setLayoutParams(lp);
         setTitle(data.navtitles[position].getTitle());
 
         switch (position) {
             case 0 :
                 fragmentTransaction.replace(R.id.frame_container, new SendReferralsFragment());
+                currentFragment = 0;
                 break;
 
             case 1 :
                 fragmentTransaction.replace(R.id.frame_container, new ReferralsFragment());
+                currentFragment = 1;
                 break;
 
             case 2 :
                 fragmentTransaction.replace(R.id.frame_container, new ReportFragment());
+                currentFragment = 2;
                 break;
 
             case 3 :
                 fragmentTransaction.replace(R.id.frame_container, new ContactsFragment());
+                currentFragment = 3;
                 break;
 
-            case 4 :
-                fragmentTransaction.replace(R.id.frame_container, new HelpFragment());
-                break;
+            case 4:
+                Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(contactIntent,CONTACT_KEY);
+
             case 5 :
+                fragmentTransaction.replace(R.id.frame_container, new HelpFragment());
+                currentFragment = 5;
+                break;
+            case 6 :
                 SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
                 sharedPreferencesEditor.remove("user");
                 sharedPreferencesEditor.remove("id");
@@ -189,6 +209,62 @@ public class MainActivity extends ActionBarActivity {
             drawerList.setItemChecked(position, true);
             drawerLayout.closeDrawer(Gravity.START);
         }
+    }
+
+    @Override
+    public void onActivityResult(int reqCode, int resultCode, Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+
+        switch (reqCode) {
+            case (CONTACT_KEY) :
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri contactData = data.getData();
+                    ContentResolver cr = getContentResolver();
+                    Cursor c =  managedQuery(contactData, null, null, null, null);
+                    if (c.moveToFirst()) {
+                        inviteName = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                        String id = c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
+                        if (Integer.parseInt(c.getString(
+                                c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                            Cursor pCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",new String[]{id}, null);
+                            while (pCur.moveToNext()) {
+                                invitePhone = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            }
+                            pCur.close();
+                        }
+                        Log.i("inviteName",inviteName);
+                        Log.i("invitePhone",invitePhone);
+                    }
+
+                    if(invitePhone!=null&&inviteName!=null) {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                        alert.setTitle("Do you wish to invite "+inviteName+" ?");
+                        alert.setMessage("You will incur message charges as per your plan");
+                        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                sendSMS(invitePhone, inviteMessage1 + inviteName + inviteMessage2 + inviteMessage3);
+                            }
+                        });
+                        alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                                dialog.dismiss();
+                            }
+                        });
+                        alert.create().show();
+                    }
+                    selectItem(currentFragment);
+
+                }
+                break;
+        }
+    }
+
+    public void sendSMS(String phoneNumber, String message) {
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage(phoneNumber, null, message, null, null);
     }
 
     /*@Override
@@ -458,12 +534,6 @@ public class MainActivity extends ActionBarActivity {
 
             return rootView;
         }
-    }
-
-    public void sendSMS(String phoneNumber, String message)
-    {
-        SmsManager sms = SmsManager.getDefault();
-        sms.sendTextMessage(phoneNumber, null, message, null, null);
     }
 
     public static class GetContactsList extends AsyncTask<String,Void,String>{
