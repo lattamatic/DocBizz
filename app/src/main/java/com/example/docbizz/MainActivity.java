@@ -3,6 +3,7 @@ package com.example.docbizz;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -33,6 +34,7 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
 import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
@@ -242,6 +244,10 @@ public class MainActivity extends ActionBarActivity {
 
     public static class ContactsFragment extends Fragment {
 
+        static RecyclerView recyclerView;
+        static ContactRecyclerViewAdapter adapter;
+        static android.os.Handler mHandler;
+
         public ContactsFragment() {
         }
 
@@ -250,7 +256,7 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
 
-            RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContacts);
+            recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewContacts);
             final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
 
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -262,10 +268,17 @@ public class MainActivity extends ActionBarActivity {
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             String id = sharedPreferences.getString("id", "");
+
+            ContactsFragment.adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
+            ContactsFragment.recyclerView.setAdapter(ContactsFragment.adapter);
+
             new GetContactsList().execute(id);
 
-            ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
-            recyclerView.setAdapter(adapter);
+            mHandler = new android.os.Handler() {
+                @Override public void handleMessage(Message msg) {
+                    adapter.notifyDataSetChanged();
+                }
+            };
 
             return rootView;
         }
@@ -323,14 +336,20 @@ public class MainActivity extends ActionBarActivity {
                         contactsEmail.add(i, tempJSON.getString("email"));
                         contactsPhone.add(i, tempJSON.getString("mobile"));
                         contactsSpeciality.add(i, tempJSON.getString("speciality"));
-                        contactsCity.add(i, tempJSON.getString("city"));
-                        contactsHospital.add(i, tempJSON.getString("hospital"));
+                        //TODO : uncomment this..
+                        //contactsCity.add(i, tempJSON.getString("city"));
+                        //contactsHospital.add(i, tempJSON.getString("hospital"));
 
-                        ContactItem tempContact = new ContactItem("",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),contactsHospital.get(i),contactsCity.get(i),contactsSpeciality.get(i));
+                        //Change this
+                        ContactItem tempContact = new ContactItem("",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),"","",contactsSpeciality.get(i));
                         //TODO change this to add imageURL
 
                         contactItemArrayList.add(i, tempContact);
                     }
+                    Log.i("str", "sr");
+                    Message msg = new Message();
+                    msg.arg1 = 1;
+                    ContactsFragment.mHandler.sendMessage(msg);
 
                 }
             } catch (JSONException e) {
