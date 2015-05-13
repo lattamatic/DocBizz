@@ -7,6 +7,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="DocBIZZ help"/>
+        android:id="@+id/txtHelp"
+        android:textSize="16sp"
+        android:textColor="#000"
+        android:padding="10dp"/>
 
 </LinearLayout>

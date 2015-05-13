@@ -1,14 +1,11 @@
 package com.example.docbizz;
 
-import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -39,14 +36,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
 import navigationDrawer.NavDrawerItem;
 import navigationDrawer.NavDrawerListAdapter;
-import referrals.ReferralItem;
-import referrals.ReferralRecyclerViewAdapter;
-import referrals.ViewPagerAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
 import util.ServiceHandler;
@@ -116,7 +109,20 @@ public class MainActivity extends ActionBarActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("DocBizz", MODE_PRIVATE);
         String id = sharedPreferences.getString("id","");
+        String strUser = sharedPreferences.getString("user", "{}");
+
+        TextView profilepic_name = (TextView) findViewById(R.id.profilepic_name);
+
+        try {
+            JSONObject userObj = new JSONObject(strUser);
+            profilepic_name.setText(userObj.getString("name"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         new GetContactsList().execute(id, "Main");
+
+        //Toast.makeText(getApplicationContext(), id, Toast.LENGTH_SHORT).show();
 
     }
 
@@ -130,6 +136,7 @@ public class MainActivity extends ActionBarActivity {
             getSupportFragmentManager().findFragmentById(R.id.frame_container)
                     .getView()
                     .setLayoutParams(lp);
+        setTitle(data.navtitles[position].getTitle());
 
         switch (position) {
             case 0 :
@@ -206,10 +213,10 @@ public class MainActivity extends ActionBarActivity {
             final EditText editPatientReason = (EditText) rootView.findViewById(R.id.editPatientReason);
             final EditText editPatientMessage = (EditText) rootView.findViewById(R.id.editPatientMessage);
 
-            final Spinner spinnerContactsList = (Spinner) rootView.findViewById(R.id.spinnerContactsList);
-            ArrayAdapter<CharSequence> adapterContactsList = new ArrayAdapter<CharSequence>(rootView.getContext(), android.R.layout.simple_spinner_dropdown_item, contactsName.toArray(new String[contactsName.size()]));
-            adapterContactsList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinnerContactsList.setAdapter(adapterContactsList);
+            final AutoCompleteTextView autoCompleteTextViewToDoctor = (AutoCompleteTextView) rootView.findViewById(R.id.autoCompleteTextViewToDoctor);
+
+            final ArrayAdapter<CharSequence> adapterContactsList = new ArrayAdapter<CharSequence>(rootView.getContext(), android.R.layout.simple_list_item_1, contactsName.toArray(new String[contactsName.size()]));
+            autoCompleteTextViewToDoctor.setAdapter(adapterContactsList);
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
@@ -224,6 +231,9 @@ public class MainActivity extends ActionBarActivity {
                     Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + spinnerContactsList.getSelectedItemId(), Toast.LENGTH_SHORT).show();
                     new SendReferral().execute(id, item.id, editPatientName.getText().toString(), editPatientContactNumber.getText().toString(),
                             editPatientReason.getText().toString(), editPatientMessage.getText().toString());
+                    Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
+                    new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
+                            editPatientReason.getText().toString(),editPatientMessage.getText().toString());
 
 
                 }
@@ -241,6 +251,18 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_help, container, false);
+
+            TextView txtHelp = (TextView) rootView.findViewById(R.id.txtHelp);
+
+            txtHelp.setText("Send referral : Allows you to send referrals to other doctors using this app.\n" +
+                    "\nIf the doctor to whom you want to send referral is not using this app, just go to Contacts(on Home Page) then click on Invite.\n" +
+                    "You can invite using whatsapp, gmail,facebook etc." +
+                    "\nA pre feeded message will go to doctors whom you want to invite and they can easily install the app.\n" +
+                    "\n" +
+                    "Referrals(on Home page) :  Allows you to see your inbox and referrals sent.\nJust click on any referral in your inbox and you can approve or decline the referral. You can also reply back\n" +
+                    "\n" +
+                    "Reports(on Home Page) : Generates a report automatically of your referrals sent, received, approved and declined.");
+
             return rootView;
         }
     }
@@ -251,6 +273,11 @@ public class MainActivity extends ActionBarActivity {
         public ReportFragment() {
         }
 
+        public void loadMoreItems(int rLimit, int rOffset) {
+            rOffset = rOffset + rLimit;
+            //TODO : ping to the same URL with different offset and limit
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -259,10 +286,21 @@ public class MainActivity extends ActionBarActivity {
             RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewReports);
             final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
 
+            final int rLimit = 10;
+            final int rOffset = 0;
+
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
+
+            RecyclerView.OnScrollListener onScrollListener = new InfiniteRecyclerViewOnScrollListener(layoutManager) {
+                @Override
+                public void onLoadMore() {
+                    loadMoreItems(rLimit, rOffset);
+                }
+            };
+            recyclerView.setOnScrollListener(onScrollListener);
 
             reportItemArrayList = new ArrayList<>();
 
@@ -625,9 +663,13 @@ public class MainActivity extends ActionBarActivity {
         protected String doInBackground(String... params) {
 
             userId = params[0];
+            limit = params[1];
+            offset = params[2];
 
             List<NameValuePair> paramsList = new ArrayList<>();
             paramsList.add(new BasicNameValuePair("doc",userId));
+            paramsList.add(new BasicNameValuePair("limit", limit));
+            paramsList.add(new BasicNameValuePair("offset", offset));
 
             ServiceHandler requestMaker = new ServiceHandler();
 

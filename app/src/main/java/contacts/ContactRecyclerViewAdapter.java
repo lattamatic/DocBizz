@@ -54,7 +54,7 @@ public class ContactRecyclerViewAdapter extends RecyclerView.Adapter<ContactRecy
     public ListItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
-                inflate(R.layout.contacts_recyclerview_element,
+                inflate(R.layout.card_contacts_recyclerview_element,
                         viewGroup,
                         false);
         return new ListItemViewHolder(itemView);
