@@ -36,6 +36,7 @@ public class SentReferralItem extends Fragment {
 
     final int rLimit = 10;
     static int rOffset = 0;
+    public static RecyclerView recyclerViewSent;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -43,7 +44,7 @@ public class SentReferralItem extends Fragment {
 
         MainActivity.sentAdapter = new ReferralRecyclerViewAdapter(MainActivity.sentItemsList,root.getContext());
 
-        RecyclerView recyclerViewSent = (RecyclerView) root.findViewById(R.id.recyclerViewReferralsSent);
+        recyclerViewSent = (RecyclerView) root.findViewById(R.id.recyclerViewReferralsSent);
         final LinearLayoutManager layoutManagerSent = new LinearLayoutManager(root.getContext());
 
         layoutManagerSent.setOrientation(LinearLayoutManager.VERTICAL);
@@ -60,19 +61,6 @@ public class SentReferralItem extends Fragment {
         recyclerViewSent.setOnScrollListener(onScrollListenerSent);
 
         recyclerViewSent.setAdapter(MainActivity.sentAdapter);
-
-        MainActivity.sentHandler = new Handler(){
-            public void handleMessage(Message msg) {
-                if (msg.arg1 == 1) {
-                    MainActivity.sentAdapter.notifyDataSetChanged();
-                    MainActivity.sentAdapter.notifyItemRangeInserted(0,msg.arg2-1);
-                    MainActivity.sentAdapter.notifyItemRangeChanged(0,msg.arg2-1);
-                    Log.i("sentAdapterItemCount", String.valueOf(MainActivity.sentAdapter.getItemCount()));
-                    Log.i("Inside", "sentHandler");
-                }
-
-            }
-        };
 
         return root;
     }

@@ -45,8 +45,10 @@ import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
 import navigationDrawer.NavDrawerItem;
 import navigationDrawer.NavDrawerListAdapter;
+import referrals.InboxReferralItem;
 import referrals.ReferralItem;
 import referrals.ReferralRecyclerViewAdapter;
+import referrals.SentReferralItem;
 import referrals.ViewPagerAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
@@ -73,7 +75,6 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
-    public static Handler inboxHandler, sentHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,9 +83,6 @@ public class MainActivity extends ActionBarActivity {
 
         loadInboxProgress = new ProgressDialog(MainActivity.this);
         loadSentProgress = new ProgressDialog(MainActivity.this);
-
-        inboxHandler = new Handler();
-        sentHandler = new Handler();
 
         List<NavDrawerItem> list = data.getNavDrawerItems();
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -369,6 +367,7 @@ public class MainActivity extends ActionBarActivity {
     public static class ReferralsFragment extends Fragment {
 
         ViewPager mViewPager;
+        static Handler mHandler;
 
         public ReferralsFragment() {
         }
@@ -376,7 +375,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
 
             inboxItemsList = new ArrayList<>();
             sentItemsList = new ArrayList<>();
@@ -389,6 +388,28 @@ public class MainActivity extends ActionBarActivity {
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
+
+            /*RecyclerView recyclerViewInbox = (RecyclerView) rootView.findViewById(R.id.recyclerViewReferralsInbox);
+            final LinearLayoutManager layoutManagerInbox = new LinearLayoutManager(rootView.getContext());
+
+            layoutManagerInbox.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerViewInbox.setLayoutManager(layoutManagerInbox);
+            recyclerViewInbox.setItemAnimator(new DefaultItemAnimator());
+            recyclerViewInbox.setHasFixedSize(true);
+
+            RecyclerView recyclerViewSent = (RecyclerView) rootView.findViewById(R.id.recyclerViewReferralsInbox);
+            final LinearLayoutManager layoutManagerSent = new LinearLayoutManager(rootView.getContext());
+
+            layoutManagerSent.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerViewSent.setLayoutManager(layoutManagerSent);
+            recyclerViewSent.setItemAnimator(new DefaultItemAnimator());
+            recyclerViewSent.setHasFixedSize(true);*/
+
+            /*final ReferralRecyclerViewAdapter inboxAdapter = new ReferralRecyclerViewAdapter(inboxItemsList, rootView.getContext());
+            recyclerViewInbox.setAdapter(inboxAdapter);
+
+            final ReferralRecyclerViewAdapter outboxAdapter = new ReferralRecyclerViewAdapter(sentItemsList, rootView.getContext());
+            recyclerViewSent.setAdapter(outboxAdapter);*/
 
             new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
 
@@ -415,6 +436,25 @@ public class MainActivity extends ActionBarActivity {
 
                 }
             });
+
+            mHandler = new android.os.Handler() {
+                @Override public void handleMessage(Message msg) {
+                    if(msg.arg1 == 0) {
+                        Log.i("inbox", "" + inboxItemsList.size());
+                        inboxAdapter = null;
+                        inboxAdapter = new ReferralRecyclerViewAdapter(inboxItemsList, rootView.getContext());
+                        InboxReferralItem.recyclerViewInbox.setAdapter(inboxAdapter);
+                        inboxAdapter.notifyDataSetChanged();
+                    }
+                    else if(msg.arg1 == 1) {
+                        Log.i("sent", "" + sentItemsList.size());
+                        sentAdapter = null;
+                        sentAdapter = new ReferralRecyclerViewAdapter(sentItemsList, rootView.getContext());
+                        SentReferralItem.recyclerViewSent.setAdapter(sentAdapter);
+                        sentAdapter.notifyDataSetChanged();
+                    }
+                }
+            };
 
             return rootView;
         }
@@ -555,7 +595,6 @@ public class MainActivity extends ActionBarActivity {
                 loadInboxSuccess = false;
             }
 
-
             return null;
         }
 
@@ -568,9 +607,8 @@ public class MainActivity extends ActionBarActivity {
             }
             if(loadInboxSuccess){
                 Message msg = new Message();
-                msg.arg1=1;
-                msg.arg2=inboxItemsList.size();
-                inboxHandler.sendMessage(msg);
+                msg.arg1=0;
+                ReferralsFragment.mHandler.sendMessage(msg);
             }
         }
 
@@ -658,9 +696,8 @@ public class MainActivity extends ActionBarActivity {
             }
             if(loadSentSuccess){
                 Message msg = new Message();
-                msg.arg1 = 1;
-                msg.arg2 = sentItemsList.size();
-                sentHandler.sendMessage(msg);
+                msg.arg1=1;
+                ReferralsFragment.mHandler.sendMessage(msg);
             }
         }
 
