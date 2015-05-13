@@ -1,6 +1,7 @@
 package com.example.docbizz;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -164,6 +165,17 @@ public class MainActivity extends ActionBarActivity {
 
             case 4 :
                 fragmentTransaction.replace(R.id.frame_container, new HelpFragment());
+                break;
+            case 5 :
+                SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+                sharedPreferencesEditor.remove("user");
+                sharedPreferencesEditor.remove("id");
+                sharedPreferencesEditor.commit();
+
+                Intent intent = new Intent(MainActivity.this, Home.class);
+                startActivity(intent);
+                Toast.makeText(getApplicationContext(), "You have been logged out successfully", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
         }
 
