@@ -36,12 +36,13 @@ public class InboxReferralItem extends Fragment {
 
     final int rLimit = 10;
     static int rOffset = 0;
+    public static RecyclerView recyclerViewInbox;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_referrals_inbox, null);
 
-        final RecyclerView recyclerViewInbox = (RecyclerView) root.findViewById(R.id.recyclerViewReferralsInbox);
+        recyclerViewInbox = (RecyclerView) root.findViewById(R.id.recyclerViewReferralsInbox);
         final LinearLayoutManager layoutManagerInbox = new LinearLayoutManager(root.getContext());
 
         layoutManagerInbox.setOrientation(LinearLayoutManager.VERTICAL);
@@ -60,18 +61,6 @@ public class InboxReferralItem extends Fragment {
         recyclerViewInbox.setOnScrollListener(onScrollListenerInbox);
 
         recyclerViewInbox.setAdapter(MainActivity.inboxAdapter);
-
-        MainActivity.inboxHandler = new Handler(){
-            public void handleMessage(Message msg) {
-                if (msg.arg1 == 1) {
-                    MainActivity.inboxAdapter.notifyDataSetChanged();
-                    MainActivity.inboxAdapter.notifyItemRangeInserted(0,msg.arg2);
-                    MainActivity.inboxAdapter.notifyItemRangeChanged(0,msg.arg2);
-                    Log.i("inboxAdapterItemCount", String.valueOf(MainActivity.inboxAdapter.getItemCount()));
-                    Log.i("Inside", "inboxHandler");
-                }
-            }
-        };
 
         return root;
     }

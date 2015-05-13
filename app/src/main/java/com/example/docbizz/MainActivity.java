@@ -1,19 +1,12 @@
 package com.example.docbizz;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -450,6 +443,7 @@ public class MainActivity extends ActionBarActivity {
     public static class ReferralsFragment extends Fragment {
 
         ViewPager mViewPager;
+        static Handler mHandler;
 
         public ReferralsFragment() {
         }
@@ -457,7 +451,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
 
             inboxItemsList = new ArrayList<>();
             sentItemsList = new ArrayList<>();
@@ -470,6 +464,28 @@ public class MainActivity extends ActionBarActivity {
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
+
+            /*RecyclerView recyclerViewInbox = (RecyclerView) rootView.findViewById(R.id.recyclerViewReferralsInbox);
+            final LinearLayoutManager layoutManagerInbox = new LinearLayoutManager(rootView.getContext());
+
+            layoutManagerInbox.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerViewInbox.setLayoutManager(layoutManagerInbox);
+            recyclerViewInbox.setItemAnimator(new DefaultItemAnimator());
+            recyclerViewInbox.setHasFixedSize(true);
+
+            RecyclerView recyclerViewSent = (RecyclerView) rootView.findViewById(R.id.recyclerViewReferralsInbox);
+            final LinearLayoutManager layoutManagerSent = new LinearLayoutManager(rootView.getContext());
+
+            layoutManagerSent.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerViewSent.setLayoutManager(layoutManagerSent);
+            recyclerViewSent.setItemAnimator(new DefaultItemAnimator());
+            recyclerViewSent.setHasFixedSize(true);*/
+
+            /*final ReferralRecyclerViewAdapter inboxAdapter = new ReferralRecyclerViewAdapter(inboxItemsList, rootView.getContext());
+            recyclerViewInbox.setAdapter(inboxAdapter);
+
+            final ReferralRecyclerViewAdapter outboxAdapter = new ReferralRecyclerViewAdapter(sentItemsList, rootView.getContext());
+            recyclerViewSent.setAdapter(outboxAdapter);*/
 
             new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
 
@@ -495,6 +511,25 @@ public class MainActivity extends ActionBarActivity {
 
                 }
             });
+
+            mHandler = new android.os.Handler() {
+                @Override public void handleMessage(Message msg) {
+                    if(msg.arg1 == 0) {
+                        Log.i("inbox", "" + inboxItemsList.size());
+                        inboxAdapter = null;
+                        inboxAdapter = new ReferralRecyclerViewAdapter(inboxItemsList, rootView.getContext());
+                        InboxReferralItem.recyclerViewInbox.setAdapter(inboxAdapter);
+                        inboxAdapter.notifyDataSetChanged();
+                    }
+                    else if(msg.arg1 == 1) {
+                        Log.i("sent", "" + sentItemsList.size());
+                        sentAdapter = null;
+                        sentAdapter = new ReferralRecyclerViewAdapter(sentItemsList, rootView.getContext());
+                        SentReferralItem.recyclerViewSent.setAdapter(sentAdapter);
+                        sentAdapter.notifyDataSetChanged();
+                    }
+                }
+            };
 
             return rootView;
         }
@@ -555,10 +590,14 @@ public class MainActivity extends ActionBarActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
                 return null;
             }
         }
+    }
 
         public static class LoadInbox extends AsyncTask<String, Void, String> {
 
@@ -628,9 +667,8 @@ public class MainActivity extends ActionBarActivity {
                     loadInboxSuccess = false;
                 }
 
-
-                return null;
-            }
+            return null;
+        }
 
             @Override
             protected void onPostExecute(String res) {
@@ -646,7 +684,11 @@ public class MainActivity extends ActionBarActivity {
                     inboxHandler.sendMessage(msg);
                 }
             }
-
+            if(loadInboxSuccess){
+                Message msg = new Message();
+                msg.arg1=0;
+                ReferralsFragment.mHandler.sendMessage(msg);
+            }
         }
 
         public static class LoadSent extends AsyncTask<String, Void, String> {
@@ -735,7 +777,11 @@ public class MainActivity extends ActionBarActivity {
                     sentHandler.sendMessage(msg);
                 }
             }
-
+            if(loadSentSuccess){
+                Message msg = new Message();
+                msg.arg1=1;
+                ReferralsFragment.mHandler.sendMessage(msg);
+            }
         }
 
         public static class GetReports extends AsyncTask<String, Void, String> {
@@ -802,6 +848,7 @@ public class MainActivity extends ActionBarActivity {
                 return null;
             }
         }
+    }
 
         public static class SendReferral extends AsyncTask<String, Void, String> {
 
@@ -846,3 +893,4 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
+}
