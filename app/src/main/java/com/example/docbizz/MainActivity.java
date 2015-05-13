@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -190,10 +191,10 @@ public class MainActivity extends ActionBarActivity {
             final EditText editPatientReason = (EditText) rootView.findViewById(R.id.editPatientReason);
             final EditText editPatientMessage = (EditText) rootView.findViewById(R.id.editPatientMessage);
 
-            final Spinner spinnerContactsList = (Spinner) rootView.findViewById(R.id.spinnerContactsList);
-            ArrayAdapter<CharSequence> adapterContactsList = new ArrayAdapter<CharSequence>(rootView.getContext(), android.R.layout.simple_spinner_dropdown_item, contactsName.toArray(new String[contactsName.size()]));
-            adapterContactsList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinnerContactsList.setAdapter(adapterContactsList);
+            final AutoCompleteTextView autoCompleteTextViewToDoctor = (AutoCompleteTextView) rootView.findViewById(R.id.autoCompleteTextViewToDoctor);
+
+            final ArrayAdapter<CharSequence> adapterContactsList = new ArrayAdapter<CharSequence>(rootView.getContext(), android.R.layout.simple_list_item_1, contactsName.toArray(new String[contactsName.size()]));
+            autoCompleteTextViewToDoctor.setAdapter(adapterContactsList);
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
@@ -203,9 +204,10 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onClick(View v) {
 
-                    ContactItem item = contactItemArrayList.get((int) spinnerContactsList.getSelectedItemId());
+                    String selectedDoctor = autoCompleteTextViewToDoctor.getText().toString();
+                    ContactItem item = contactItemArrayList.get( contactsName.indexOf(selectedDoctor));
 
-                    Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + spinnerContactsList.getSelectedItemId(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
                     new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
                             editPatientReason.getText().toString(),editPatientMessage.getText().toString());
 
