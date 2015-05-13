@@ -160,7 +160,6 @@ public class Home extends ActionBarActivity {
                 msg.arg1 = 1;
                 mHandler.sendMessage(msg);
             }
-
             return null;
         }
     }
