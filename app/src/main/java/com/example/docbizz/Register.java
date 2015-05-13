@@ -76,6 +76,7 @@ public class Register extends ActionBarActivity {
     public class RegisterTask extends AsyncTask<String,Void,String>{
 
         String name, email, phone, password, spec, city, hospital;
+        boolean registerSuccess = false;
 
         @Override
         protected String doInBackground(String... params) {
@@ -107,19 +108,28 @@ public class Register extends ActionBarActivity {
             try {
                 JSONObject responseObject = new JSONObject(response);
                 if(responseObject.getBoolean("result")) {
-
+                    registerSuccess = true;
                     new LoginTask().execute(editTextEmail.getText().toString(),editTextPassword.getText().toString());
                 }
                 else {
-                    Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
+                    registerSuccess = false;
                 }
             }
             catch(Exception e) {
                 e.printStackTrace();
-                Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
+                registerSuccess = false;
             }
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String res){
+            super.onPostExecute(res);
+
+            if(!registerSuccess){
+                Toast.makeText(getApplicationContext(), "Sorry. An unknown error occurred.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -140,21 +150,22 @@ public class Register extends ActionBarActivity {
             paramsLogin.add(new BasicNameValuePair("password", password));
 
             String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
-            JSONObject responseLoginObject = null;
             try {
-                responseLoginObject = new JSONObject(responseLogin);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+               JSONObject responseLoginObject = new JSONObject(responseLogin);
 
-            SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
-            try {
-                sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
-                sharedPreferencesEditor.putString("id", responseLoginObject.getJSONObject("data").getString("id"));
+                SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+                try {
+                    sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
+                    sharedPreferencesEditor.putString("id", responseLoginObject.getJSONObject("data").getString("id"));
+                    MainActivity.doctorID = responseLoginObject.getJSONObject("data").getString("id");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                sharedPreferencesEditor.commit();
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            sharedPreferencesEditor.commit();
 
             Intent intent = new Intent(Register.this, MainActivity.class);
             startActivity(intent);

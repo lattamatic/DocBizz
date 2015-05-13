@@ -1,11 +1,14 @@
 package com.example.docbizz;
 
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -26,7 +29,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
@@ -34,19 +36,19 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
 
 import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
 import navigationDrawer.NavDrawerItem;
 import navigationDrawer.NavDrawerListAdapter;
+import referrals.ReferralItem;
+import referrals.ReferralRecyclerViewAdapter;
+import referrals.ViewPagerAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
-import util.InfiniteRecyclerViewOnScrollListener;
 import util.ServiceHandler;
 import util.data;
 
@@ -54,19 +56,33 @@ import util.data;
 public class MainActivity extends ActionBarActivity {
 
 
+    public static String doctorID;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
+    public static ViewPagerAdapter customAdapter;
+    public static ReferralRecyclerViewAdapter inboxAdapter, sentAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
+    public static ProgressDialog loadInboxProgress, loadSentProgress;
     public static ArrayList<String> contactsIDs, contactsName, contactsEmail, contactsPhone, contactsSpeciality, contactsCity, contactsHospital;
     public static ArrayList<ContactItem> contactItemArrayList;
     public static ArrayList<ReportItem> reportItemArrayList;
+    public static ArrayList<ReferralItem> inboxItemsList, sentItemsList;
     public static ArrayList<String> reportsName, reportsSpeciality;
     public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
+    public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
+    public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
+    public static Handler inboxHandler, sentHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        loadInboxProgress = new ProgressDialog(MainActivity.this);
+        loadSentProgress = new ProgressDialog(MainActivity.this);
+
+        inboxHandler = new Handler();
+        sentHandler = new Handler();
 
         List<NavDrawerItem> list = data.getNavDrawerItems();
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -206,8 +222,8 @@ public class MainActivity extends ActionBarActivity {
                     ContactItem item = contactItemArrayList.get((int) spinnerContactsList.getSelectedItemId());
 
                     Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + spinnerContactsList.getSelectedItemId(), Toast.LENGTH_SHORT).show();
-                    new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
-                            editPatientReason.getText().toString(),editPatientMessage.getText().toString());
+                    new SendReferral().execute(id, item.id, editPatientName.getText().toString(), editPatientContactNumber.getText().toString(),
+                            editPatientReason.getText().toString(), editPatientMessage.getText().toString());
 
 
                 }
@@ -235,11 +251,6 @@ public class MainActivity extends ActionBarActivity {
         public ReportFragment() {
         }
 
-        public void loadMoreItems(int rLimit, int rOffset) {
-            rOffset = rOffset + rLimit;
-            //TODO : ping to the same URL with different offset and limit
-        }
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -248,27 +259,16 @@ public class MainActivity extends ActionBarActivity {
             RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerViewReports);
             final LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
 
-            final int rLimit = 10;
-            final int rOffset = 0;
-
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
 
-            RecyclerView.OnScrollListener onScrollListener = new InfiniteRecyclerViewOnScrollListener(layoutManager) {
-                @Override
-                public void onLoadMore() {
-                    loadMoreItems(rLimit, rOffset);
-                }
-            };
-            recyclerView.setOnScrollListener(onScrollListener);
-
             reportItemArrayList = new ArrayList<>();
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             String id = sharedPreferences.getString("id", "");
-            new GetReports().execute(id, rLimit + "", rOffset + "");
+            new GetReports().execute(id);
 
             final ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
@@ -325,6 +325,8 @@ public class MainActivity extends ActionBarActivity {
 
     public static class ReferralsFragment extends Fragment {
 
+        ViewPager mViewPager;
+
         public ReferralsFragment() {
         }
 
@@ -333,7 +335,43 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
 
-            //TODO : write the corresponding JAVA code for linking them with the backend..
+            inboxItemsList = new ArrayList<>();
+            sentItemsList = new ArrayList<>();
+
+            mViewPager = (ViewPager) rootView.findViewById(R.id.pager);
+            customAdapter = new ViewPagerAdapter(getActivity().getApplicationContext(),getActivity().getSupportFragmentManager());
+
+            mViewPager.setAdapter(customAdapter);
+            mViewPager.setCurrentItem(0);
+
+            SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
+            final String id = sharedPreferences.getString("id", "");
+
+            new LoadInbox().execute(id,String.valueOf(0),String.valueOf(10));
+
+            mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+                    mViewPager.setCurrentItem(position);
+                    if(position==0){
+                        new LoadInbox().execute(id,String.valueOf(0),String.valueOf(10));
+                    }
+                    else if(position==1){
+                        new LoadSent().execute(id, String.valueOf(0), String.valueOf(10));
+                    }
+
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+
+                }
+            });
 
             return rootView;
         }
@@ -399,21 +437,197 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public static class GetReports extends AsyncTask<String,Void,String>{
+    public static class LoadInbox extends AsyncTask<String,Void,String>{
 
-        String userId, limit, offset;
+        String userId, response;
+        int start, end;
+        boolean loadInboxSuccess = false;
+
+        @Override
+        protected void onPreExecute(){
+            loadInboxProgress.setMessage("Loading Inbox...");
+            loadInboxProgress.show();
+
+            Log.i("Inside","LoadInbox");
+        }
 
         @Override
         protected String doInBackground(String... params) {
 
             userId = params[0];
-            limit = params[1];
-            offset = params[2];
+            start = Integer.parseInt(params[1]);
+            end = Integer.parseInt(params[2]);
+
+            List<NameValuePair> paramsList = new ArrayList<>();
+            paramsList.add(new BasicNameValuePair("receiver",userId));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            response = requestMaker.makeServiceCall(data.urlInbox, ServiceHandler.POST, paramsList);
+
+            try {
+                JSONObject inboxJSON = new JSONObject(response);
+
+                if(inboxJSON!=null){
+                    loadInboxSuccess = true;
+
+                    JSONArray inboxArray = new JSONArray(inboxJSON.getString("inbox"));
+                    String ID,name,reason,senderID;
+
+                    Log.i("inboxJSON", String.valueOf(inboxArray));
+
+                    inboxIDs = new ArrayList<>();
+                    inboxName = new ArrayList<>();
+                    inboxReason = new ArrayList<>();
+                    inboxSenderID = new ArrayList<>();
+                    inboxItemsList = new ArrayList<>();
+
+                    for(int i=0; i < inboxArray.length();i++) {
+                        JSONObject tempJSON = new JSONObject();
+                        tempJSON = inboxArray.getJSONObject(i);
+                        ID = tempJSON.getString("id");
+                        name = tempJSON.getString("name");
+                        reason = tempJSON.getString("reason");
+                        senderID = tempJSON.getString("sender");
+                        inboxIDs.add(i, ID);
+                        inboxName.add(i, name);
+                        inboxSenderID.add(i, senderID);
+                        inboxReason.add(i, reason);
+
+                        //TODO change the arguments below
+                        inboxItemsList.add(i, new ReferralItem("",name,"","",reason,"",new ArrayList<messages.Message>(),""));
+                    }
+
+                }
+                else
+                    loadInboxSuccess = false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                loadInboxSuccess = false;
+            }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String res){
+            super.onPostExecute(res);
+            if(loadInboxProgress!=null&&loadInboxProgress.isShowing()) {
+                loadInboxProgress.hide();
+                loadInboxProgress.cancel();
+            }
+            if(loadInboxSuccess){
+                Message msg = new Message();
+                msg.arg1=1;
+                msg.arg2=inboxItemsList.size();
+                inboxHandler.sendMessage(msg);
+            }
+        }
+
+    }
+
+    public static class LoadSent extends AsyncTask<String,Void,String>{
+
+        String userId, response;
+        int start, end;
+        boolean loadSentSuccess = false;
+
+        @Override
+        protected void onPreExecute(){
+            loadSentProgress.setMessage("Loading Sent...");
+            loadSentProgress.show();
+            Log.i("Inside","LoadSent");
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            userId = params[0];
+            start = Integer.parseInt(params[1]);
+            end = Integer.parseInt(params[2]);
+
+            Log.i("userId",userId);
+
+            List<NameValuePair> paramsList = new ArrayList<>();
+            paramsList.add(new BasicNameValuePair("sender",userId));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            response = requestMaker.makeServiceCall(data.urlSent, ServiceHandler.POST, paramsList);
+
+            try {
+                JSONObject inboxJSON = new JSONObject(response);
+
+                if(inboxJSON!=null){
+                    loadSentSuccess = true;
+
+                    JSONArray sentArray = new JSONArray(inboxJSON.getString("sent"));
+                    String ID,name,status,receiverID;
+
+                    Log.i("sentArray", String.valueOf(sentArray));
+                    sentIDs = new ArrayList<>();
+                    sentName = new ArrayList<>();
+                    sentStatus = new ArrayList<>();
+                    sentReceiverIDs = new ArrayList<>();
+                    sentItemsList = new ArrayList<>();
+
+                    for(int i=0; i < sentArray.length();i++) {
+                        JSONObject tempJSON = new JSONObject();
+                        tempJSON = sentArray.getJSONObject(i);
+                        ID = tempJSON.getString("id");
+                        name = tempJSON.getString("name");
+                        status = tempJSON.getString("status");
+                        receiverID = tempJSON.getString("receiver");
+                        sentIDs.add(i, ID);
+                        sentName.add(i, name);
+                        sentReceiverIDs.add(i, receiverID);
+                        sentStatus.add(i, status);
+
+                        //TODO change the arguments below
+                        sentItemsList.add(i, new ReferralItem("",name,"","","",status,new ArrayList<messages.Message>(),""));
+                    }
+
+                }
+                else
+                    loadSentSuccess = false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                loadSentSuccess = false;
+            }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String res){
+            super.onPostExecute(res);
+            if(loadSentProgress!=null&&loadSentProgress.isShowing()){
+                loadSentProgress.hide();
+                loadSentProgress.cancel();
+            }
+            if(loadSentSuccess){
+                Message msg = new Message();
+                msg.arg1 = 1;
+                msg.arg2 = sentItemsList.size();
+                sentHandler.sendMessage(msg);
+            }
+        }
+
+    }
+
+    public static class GetReports extends AsyncTask<String,Void,String>{
+
+        String userId;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            userId = params[0];
 
             List<NameValuePair> paramsList = new ArrayList<>();
             paramsList.add(new BasicNameValuePair("doc",userId));
-            paramsList.add(new BasicNameValuePair("limit", limit));
-            paramsList.add(new BasicNameValuePair("offset", offset));
 
             ServiceHandler requestMaker = new ServiceHandler();
 
@@ -481,6 +695,9 @@ public class MainActivity extends ActionBarActivity {
             patientMobile = params[3];
             reason = params[4];
             message = params[5];
+
+            Log.i("receiverId",receiverId);
+            Log.i("senderId",senderId);
 
             List<NameValuePair> paramsList = new ArrayList<>();
 

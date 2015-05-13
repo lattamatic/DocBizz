@@ -110,10 +110,13 @@ public class Splashscreen extends ActionBarActivity {
 
             String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
             JSONObject responseLoginObject = null;
-            try {
-                responseLoginObject = new JSONObject(responseLogin);
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+            if(responseLogin!=null) {
+                try {
+                    responseLoginObject = new JSONObject(responseLogin);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();

@@ -34,7 +34,7 @@ public class data {
     public static String urlReports = urlDomain + "reports.php";
     public static String urlSendReferral = urlDomain + "refer.php";
     public static String urlApproveDeclineReferral = urlDomain + "appdec.php";
-
+    public static String urlReferralDetails = urlDomain + "referal_details.php";
     public static String SENDER_ID = ""; //TODO : project ID from Google Console
 
 }

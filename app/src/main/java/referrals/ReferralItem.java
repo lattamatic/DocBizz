@@ -1,11 +1,14 @@
 package referrals;
 
+
 import java.util.ArrayList;
+
 
 import messages.Message;
 
+
 /**
- * Created by aravind on 12/5/15.
+ * Created by aravind on 12/5/15. 
  */
 public class ReferralItem {
     String doctorPicURL;
@@ -17,6 +20,7 @@ public class ReferralItem {
     String referralDate;
     ArrayList<Message> messages;
 
+
     public ReferralItem(String doctorPicURL, String doctorName, String patientName, String phoneNumber, String patientReason, String status, ArrayList<Message> messages, String referralDate) {
         this.doctorPicURL = doctorPicURL;
         this.doctorName = doctorName;
@@ -27,4 +31,4 @@ public class ReferralItem {
         this.messages = messages;
         this.referralDate = referralDate;
     }
-}
+} 
