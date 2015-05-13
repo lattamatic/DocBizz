@@ -150,6 +150,7 @@ public class Register extends ActionBarActivity {
             SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
             try {
                 sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
+                sharedPreferencesEditor.putString("id", responseLoginObject.getJSONObject("data").getString("id"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }

@@ -1,5 +1,6 @@
 package com.example.docbizz;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,14 +19,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +51,6 @@ public class MainActivity extends ActionBarActivity {
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private ActionBarDrawerToggle mDrawerToggle;
-    public static FragmentManager SupportFragmentManager;
     public static ArrayList<String> contactsIDs, contactsName, contactsEmail, contactsPhone, contactsSpeciality, contactsCity, contactsHospital;
     public static ArrayList<ContactItem> contactItemArrayList;
     public static ArrayList<ReportItem> reportItemArrayList;
@@ -171,6 +174,8 @@ public class MainActivity extends ActionBarActivity {
 
             //TODO : Change the arguments
 
+            //TODO : Get the text from the edittexts and call this request on the click of the submit button.. these should be the arguments
+
             new SendReferral().execute("","","","","","");
 
             return rootView;
@@ -224,7 +229,9 @@ public class MainActivity extends ActionBarActivity {
 
             reportItemArrayList = new ArrayList<>();
 
-            new GetReports().execute(""); //TODO set this parameter as the doc ID
+            SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
+            String id = sharedPreferences.getString("id", "");
+            new GetReports().execute(id, rLimit + "", rOffset + "");
 
             ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
@@ -253,7 +260,9 @@ public class MainActivity extends ActionBarActivity {
 
             contactItemArrayList = new ArrayList<>();
 
-            new GetContactsList().execute(""); //TODO set this parameter as the doc ID
+            SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
+            String id = sharedPreferences.getString("id", "");
+            new GetContactsList().execute(id);
 
             ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
@@ -332,15 +341,19 @@ public class MainActivity extends ActionBarActivity {
 
     public static class GetReports extends AsyncTask<String,Void,String>{
 
-        String userId;
+        String userId, limit, offset;
 
         @Override
         protected String doInBackground(String... params) {
 
             userId = params[0];
+            limit = params[1];
+            offset = params[2];
 
             List<NameValuePair> paramsList = new ArrayList<>();
             paramsList.add(new BasicNameValuePair("doc",userId));
+            paramsList.add(new BasicNameValuePair("limit", limit));
+            paramsList.add(new BasicNameValuePair("offset", offset));
 
             ServiceHandler requestMaker = new ServiceHandler();
 
