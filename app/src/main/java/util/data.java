@@ -13,13 +13,13 @@ import navigationDrawer.NavDrawerItem;
 
 public class data {
     public static NavDrawerItem[] navtitles={
-            new NavDrawerItem("Send Referral", R.drawable.ic_launcher),
-            new NavDrawerItem("Referrals",R.drawable.ic_launcher),
-            new NavDrawerItem("Reports",R.drawable.ic_launcher),
+            new NavDrawerItem("Send Referral", R.drawable.calendar),
+            new NavDrawerItem("Referrals",R.drawable.registered),
+            new NavDrawerItem("Reports",R.drawable.reports),
             new NavDrawerItem("Contacts",R.drawable.ic_launcher),
-            new NavDrawerItem("Invite a friend",R.drawable.ic_launcher),
-            new NavDrawerItem("Help",R.drawable.ic_launcher),
-            new NavDrawerItem("Logout",R.drawable.ic_launcher)
+            new NavDrawerItem("Invite a friend",R.drawable.inviteafriend),
+            new NavDrawerItem("Help",R.drawable.help),
+            new NavDrawerItem("Logout",R.drawable.logout)
     };
 
     public static List<NavDrawerItem> getNavDrawerItems(){

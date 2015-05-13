@@ -43,7 +43,8 @@
         </activity>
         <activity
             android:name=".Home"
-            android:label="@string/title_activity_home" >
+            android:label="@string/title_activity_home"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
         <activity
             android:name=".IncomingReferralDetails"
@@ -71,10 +72,6 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity
-            android:name=".InviteFragment"
-            android:label="@string/title_activity_invite_fragment" >
-        </activity>
     </application>
 
 </manifest>

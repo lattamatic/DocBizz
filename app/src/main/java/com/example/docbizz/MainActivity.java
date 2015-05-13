@@ -95,6 +95,8 @@ public class MainActivity extends ActionBarActivity {
         loadInboxProgress = new ProgressDialog(MainActivity.this);
         loadSentProgress = new ProgressDialog(MainActivity.this);
 
+        setTitle("Referrals");
+
         List<NavDrawerItem> list = data.getNavDrawerItems();
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -180,6 +182,7 @@ public class MainActivity extends ActionBarActivity {
             case 4:
                 Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 startActivityForResult(contactIntent,CONTACT_KEY);
+                break;
 
             case 5 :
                 fragmentTransaction.replace(R.id.frame_container, new HelpFragment());

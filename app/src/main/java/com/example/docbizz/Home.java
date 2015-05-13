@@ -1,13 +1,22 @@
 package com.example.docbizz;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
@@ -26,13 +36,20 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import util.ImageSlidePagerFragment;
 import util.ServiceHandler;
+import util.ViewPagerTransformer;
 import util.data;
 
 
-public class Home extends ActionBarActivity {
+public class Home extends FragmentActivity {
 
     Handler mHandler;
+    private ViewPager mPager;
+    private PagerAdapter mPagerAdapter;
+    int i=0;
+    private static final int NUM_PAGES = 5;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +113,119 @@ public class Home extends ActionBarActivity {
             }
         });
 
+        final Resources reso = this.getResources();
+
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setPageTransformer(true, new ViewPagerTransformer());
+        mPagerAdapter = new ScreenSlidePagerAdapter(getFragmentManager());
+
+        mPager.setAdapter(mPagerAdapter);
+
+        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                ImageView slide1=(ImageView)findViewById(R.id.slide1);
+                ImageView slide2=(ImageView)findViewById(R.id.slide2);
+                ImageView slide3=(ImageView)findViewById(R.id.slide3);
+                ImageView slide4=(ImageView)findViewById(R.id.slide4);
+                ImageView slide5=(ImageView)findViewById(R.id.slide5);
+                //slide1.setAlpha(0.0f);
+                slide1.setBackground((GradientDrawable) reso.getDrawable(R.drawable.image_slider));
+                slide2.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide3.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide4.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide5.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                i=position;
+                switch (position){
+
+                    case 0:
+                        slide1.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+
+                        break;
+                    case 1:
+                        slide2.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+
+                        break;
+                    case 2:
+                        slide3.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                        break;
+                    case 3:
+                        slide4.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                        break;
+                    case 4:
+                        slide5.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                        break;
+                }
+                invalidateOptionsMenu();
+            }
+        });
+
+        change();
+
+    }
+
+    public void change(){
+        new CountDownTimer(3000, 3000) {
+
+            public void onTick(long millisUntilFinished) {
+                slideToImage(i);
+            }
+
+            public void onFinish() {
+                ++i;
+                if(i==5)
+                    i=0;
+                change();
+
+
+            }
+        }.start();
+    }
+
+    public void slideToImage(int position){
+        mPager.setCurrentItem(position);
+    }
+
+    public void slide(View v) {
+        final Resources reso = this.getResources();
+
+        switch (v.getId()) {
+            case R.id.slide1:
+                mPager.setCurrentItem(0);
+                i=0;
+                /*slide1.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                slide2.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide3.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide4.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));*/
+                break;
+            case R.id.slide2:
+                mPager.setCurrentItem(1);
+                i=1;
+               /* slide2.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                slide1.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide3.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide4.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));*/
+                break;
+            case R.id.slide3:
+                mPager.setCurrentItem(2);
+                i=2;
+                /*slide3.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                slide2.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide1.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide4.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));*/
+                break;
+            case R.id.slide4:
+                mPager.setCurrentItem(3);
+                i=3;
+               /* slide4.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider_current));
+                slide2.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide3.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));
+                slide1.setBackground((GradientDrawable)reso.getDrawable(R.drawable.image_slider));*/
+                break;
+            case R.id.slide5:
+                mPager.setCurrentItem(4);
+                i=4;
+        }
     }
 
 
@@ -161,6 +291,21 @@ public class Home extends ActionBarActivity {
                 mHandler.sendMessage(msg);
             }
             return null;
+        }
+    }
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return ImageSlidePagerFragment.create(position);
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
         }
     }
 }
