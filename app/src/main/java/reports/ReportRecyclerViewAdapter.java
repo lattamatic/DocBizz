@@ -48,7 +48,7 @@ public class ReportRecyclerViewAdapter extends RecyclerView.Adapter<ReportRecycl
     public ListItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
-                inflate(R.layout.reports_recyclerview_element,
+                inflate(R.layout.card_reports_recyclerview_element,
                         viewGroup,
                         false);
         return new ListItemViewHolder(itemView);
