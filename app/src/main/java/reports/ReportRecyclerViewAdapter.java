@@ -59,10 +59,10 @@ public class ReportRecyclerViewAdapter extends RecyclerView.Adapter<ReportRecycl
         listItemViewHolder.item = items.get(position);
         ReportItem item = items.get(position);
         listItemViewHolder.txtDoctorName.setText(item.doctorName);
-        listItemViewHolder.txtReceivedDeclined.setText(item.receivedDeclined);
-        listItemViewHolder.txtReceivedApproved.setText(item.receivedApproved);
-        listItemViewHolder.txtSentDeclined.setText(item.sentDeclined);
-        listItemViewHolder.txtSentApproved.setText(item.sentApproved);
+        listItemViewHolder.txtReceivedDeclined.setText(item.receivedDeclined + "");
+        listItemViewHolder.txtReceivedApproved.setText(item.receivedApproved + "");
+        listItemViewHolder.txtSentDeclined.setText(item.sentDeclined + "");
+        listItemViewHolder.txtSentApproved.setText(item.sentApproved + "");
     }
 
     public int getItemCount() {

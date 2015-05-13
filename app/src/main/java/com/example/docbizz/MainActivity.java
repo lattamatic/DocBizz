@@ -20,10 +20,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -91,6 +95,13 @@ public class MainActivity extends ActionBarActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setIcon(R.drawable.ic_drawer);
         mDrawerToggle.syncState();
+
+        contactItemArrayList = new ArrayList<>();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("DocBizz", MODE_PRIVATE);
+        String id = sharedPreferences.getString("id","");
+        new GetContactsList().execute(id, "Main");
+
     }
 
     private void selectItem(int position) {
@@ -172,13 +183,35 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_sendreferrals, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_sendreferrals, container, false);
 
-            //TODO : Change the arguments
+            final EditText editPatientName = (EditText) rootView.findViewById(R.id.editPatientName);
+            final EditText editPatientContactNumber = (EditText) rootView.findViewById(R.id.editPatientContactNumber);
+            final EditText editPatientReason = (EditText) rootView.findViewById(R.id.editPatientReason);
+            final EditText editPatientMessage = (EditText) rootView.findViewById(R.id.editPatientMessage);
 
-            //TODO : Get the text from the edittexts and call this request on the click of the submit button.. these should be the arguments
+            final Spinner spinnerContactsList = (Spinner) rootView.findViewById(R.id.spinnerContactsList);
+            ArrayAdapter<CharSequence> adapterContactsList = new ArrayAdapter<CharSequence>(rootView.getContext(), android.R.layout.simple_spinner_dropdown_item, contactsName.toArray(new String[contactsName.size()]));
+            adapterContactsList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerContactsList.setAdapter(adapterContactsList);
 
-            new SendReferral().execute("","","","","","");
+            SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
+            final String id = sharedPreferences.getString("id", "");
+
+            Button btnSendReferral = (Button) rootView.findViewById(R.id.btnSendReferral);
+            btnSendReferral.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    ContactItem item = contactItemArrayList.get((int) spinnerContactsList.getSelectedItemId());
+
+                    Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + spinnerContactsList.getSelectedItemId(), Toast.LENGTH_SHORT).show();
+                    new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
+                            editPatientReason.getText().toString(),editPatientMessage.getText().toString());
+
+
+                }
+            });
 
             return rootView;
         }
@@ -196,6 +229,8 @@ public class MainActivity extends ActionBarActivity {
         }
     }
     public static class ReportFragment extends Fragment {
+
+        static android.os.Handler mHandler;
 
         public ReportFragment() {
         }
@@ -238,6 +273,12 @@ public class MainActivity extends ActionBarActivity {
             final ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
 
+            mHandler = new android.os.Handler() {
+                @Override public void handleMessage(Message msg) {
+                    adapter.notifyDataSetChanged();
+                }
+            };
+
             return rootView;
         }
     }
@@ -270,7 +311,7 @@ public class MainActivity extends ActionBarActivity {
             final ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
 
-            new GetContactsList().execute(id);
+            new GetContactsList().execute(id, "Contacts");
 
             mHandler = new android.os.Handler() {
                 @Override public void handleMessage(Message msg) {
@@ -339,15 +380,16 @@ public class MainActivity extends ActionBarActivity {
                         //contactsHospital.add(i, tempJSON.getString("hospital"));
 
                         //Change this
-                        ContactItem tempContact = new ContactItem("",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),"","",contactsSpeciality.get(i));
+                        ContactItem tempContact = new ContactItem(contactsIDs.get(i),"",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),"","",contactsSpeciality.get(i));
                         //TODO change this to add imageURL
 
                         contactItemArrayList.add(i, tempContact);
                     }
                     Log.i("str", "sr");
 
-                    ContactsFragment.mHandler.sendEmptyMessage(1);
-
+                    if(params[1].equals("Contacts")) {
+                        ContactsFragment.mHandler.sendEmptyMessage(1);
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -414,6 +456,8 @@ public class MainActivity extends ActionBarActivity {
                         ReportItem tempReport = new ReportItem(name,sent_app,sent_dec,rec_app,rec_dec);
                         reportItemArrayList.add(i, tempReport);
                     }
+
+                    ReportFragment.mHandler.sendEmptyMessage(1);
 
                 }
             } catch (JSONException e) {
