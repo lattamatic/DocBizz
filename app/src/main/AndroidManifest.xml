@@ -25,7 +25,8 @@
         </activity>
         <activity
             android:name=".Splashscreen"
-            android:label="@string/title_activity_splashscreen" >
+            android:label="@string/title_activity_splashscreen"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,7 +35,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main"
+            android:theme="@style/Theme.AppCompat.StylishActionBar">
         </activity>
         <activity
             android:name=".Home"

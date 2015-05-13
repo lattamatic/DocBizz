@@ -10,4 +10,13 @@
     <style name="image_slider_current">
         <item name="android:background">@drawable/image_slider_current</item>
     </style>
+    <style name="Theme.AppCompat.NoActionBar" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    <style name="Theme.AppCompat.StylishActionBar" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/myPrimaryColor</item>
+        <item name="colorPrimaryDark">@color/myStatusBarColor</item>
+        
+    </style>
 </resources>
