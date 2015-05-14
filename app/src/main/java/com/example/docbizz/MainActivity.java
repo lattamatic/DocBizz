@@ -84,7 +84,7 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
-    public static JSONArray reports, contacts;
+    public static JSONArray reports, contacts, inbox, sent;
     public String inviteName, invitePhone;
     static SharedPreferences prefs;
     final int CONTACT_KEY = 1;
@@ -512,8 +512,8 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_referrals, container, false);
 
-            inboxItemsList = new ArrayList<>();
-            sentItemsList = new ArrayList<>();
+            //inboxItemsList = new ArrayList<>();
+            //sentItemsList = new ArrayList<>();
 
             mViewPager = (ViewPager) rootView.findViewById(R.id.pager);
             customAdapter = new ViewPagerAdapter(getActivity().getApplicationContext(),getActivity().getSupportFragmentManager());
@@ -524,6 +524,31 @@ public class MainActivity extends ActionBarActivity {
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
 
+            /*try {
+                JSONArray inboxArray = new JSONArray(prefs.getString("inbox",""));
+
+                inboxItemsList = new ArrayList<>();
+
+                String name, patientName, reason, status, doc_id;
+
+                for(int i =0;i<inboxArray.length();i++) {
+                    JSONObject inboxJSON = inboxArray.getJSONObject(i);
+
+                    name = inboxJSON.getString("name");
+                    patientName = inboxJSON.getString("patientName");
+                    reason = inboxJSON.getString("reason");
+                    status = inboxJSON.getString("status");
+                    doc_id = inboxJSON.getString("id");
+
+                    inboxItemsList.add(i, new ReferralItem(doc_id,"",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                }
+
+                Log.i("Inside","sharedPrefs");
+                Log.i("inboxList",inboxItemsList.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+*/
             /*RecyclerView recyclerViewInbox = (RecyclerView) rootView.findViewById(R.id.recyclerViewReferralsInbox);
             final LinearLayoutManager layoutManagerInbox = new LinearLayoutManager(rootView.getContext());
 
@@ -558,9 +583,64 @@ public class MainActivity extends ActionBarActivity {
                 public void onPageSelected(int position) {
                     mViewPager.setCurrentItem(position);
                     if (position == 0) {
-                        new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
+
+  /*                      try {
+                            JSONArray inboxArray = new JSONArray(prefs.getString("inbox",""));
+
+                            inboxItemsList = new ArrayList<>();
+
+                            String name, patientName, reason, status, doc_id;
+
+                            for(int i =0;i<inboxArray.length();i++) {
+                                JSONObject inboxJSON = inboxArray.getJSONObject(i);
+
+                                name = inboxJSON.getString("name");
+                                patientName = inboxJSON.getString("patientName");
+                                reason = inboxJSON.getString("reason");
+                                status = inboxJSON.getString("status");
+                                doc_id = inboxJSON.getString("id");
+
+                                inboxItemsList.add(i, new ReferralItem(doc_id,"",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                            }
+
+                            Log.i("Inside","sharedPrefs");
+                            Log.i("inboxList",inboxItemsList.toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+  */                      new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
+
                     } else if (position == 1) {
+
+/*
+                        try {
+                            JSONArray sentArray = new JSONArray(prefs.getString("sent",""));
+
+                            sentItemsList = new ArrayList<>();
+
+                            String name, patientName, reason, status, doc_id;
+
+                            for(int i =0;i<sentArray.length();i++) {
+                                JSONObject sentJSON = sentArray.getJSONObject(i);
+
+                                name = sentJSON.getString("name");
+                                patientName = sentJSON.getString("patientName");
+                                reason = sentJSON.getString("reason");
+                                status = sentJSON.getString("status");
+                                doc_id = sentJSON.getString("id");
+
+                                sentItemsList.add(i, new ReferralItem(doc_id,"",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                            }
+
+                            Log.i("Inside","sharedPrefs");
+                            Log.i("sentList",sentItemsList.toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+*/
                         new LoadSent().execute(id, String.valueOf(0), String.valueOf(10));
+
                     }
 
                 }
@@ -712,11 +792,11 @@ public class MainActivity extends ActionBarActivity {
             try {
                 JSONObject inboxJSON = new JSONObject(response);
 
-                if(inboxJSON!=null){
+                if(inboxJSON!=null) {
                     loadInboxSuccess = true;
 
                     JSONArray inboxArray = new JSONArray(inboxJSON.getString("inbox"));
-                    String ID,name,reason,senderID,patientName, status;
+                    String ID, name, reason, senderID, patientName, status;
 
                     Log.i("inboxJSON", String.valueOf(inboxArray));
 
@@ -726,7 +806,9 @@ public class MainActivity extends ActionBarActivity {
                     inboxSenderID = new ArrayList<>();
                     inboxItemsList = new ArrayList<>();
 
-                    for(int i=0; i < inboxArray.length();i++) {
+                    //inbox = new JSONArray();
+
+                    for (int i = 0; i < inboxArray.length(); i++) {
                         JSONObject tempJSON = new JSONObject();
                         tempJSON = inboxArray.getJSONObject(i);
                         ID = tempJSON.getString("id");
@@ -741,9 +823,24 @@ public class MainActivity extends ActionBarActivity {
                         inboxReason.add(i, reason);
 
                         //TODO change the arguments below
-                        inboxItemsList.add(i, new ReferralItem(ID,"",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                        inboxItemsList.add(i, new ReferralItem(ID, "", name, patientName, "", reason, status, new ArrayList<messages.Message>(), ""));
+
+                      /*  JSONObject inbox1 = new JSONObject();
+
+                        inbox1.put("id",ID);
+                        inbox1.put("name",name);
+                        inbox1.put("patientName",patientName);
+                        inbox1.put("reason",reason);
+                        inbox1.put("status",status);
+
+                        inbox.put(inbox1);
                     }
 
+                    prefs.edit().putString("inbox",inbox.toString()).commit();
+
+                }*/
+
+                    }
                 }
                 else
                     loadInboxSuccess = false;
@@ -805,11 +902,11 @@ public class MainActivity extends ActionBarActivity {
             try {
                 JSONObject inboxJSON = new JSONObject(response);
 
-                if(inboxJSON!=null){
+                if(inboxJSON!=null) {
                     loadSentSuccess = true;
 
                     JSONArray sentArray = new JSONArray(inboxJSON.getString("sent"));
-                    String ID,name,status,receiverID,patientName,reason;
+                    String ID, name, status, receiverID, patientName, reason;
 
                     Log.i("sentArray", String.valueOf(sentArray));
                     sentIDs = new ArrayList<>();
@@ -818,7 +915,9 @@ public class MainActivity extends ActionBarActivity {
                     sentReceiverIDs = new ArrayList<>();
                     sentItemsList = new ArrayList<>();
 
-                    for(int i=0; i < sentArray.length();i++) {
+                    // sent = new JSONArray();
+
+                    for (int i = 0; i < sentArray.length(); i++) {
                         JSONObject tempJSON = new JSONObject();
                         tempJSON = sentArray.getJSONObject(i);
                         ID = tempJSON.getString("id");
@@ -833,7 +932,21 @@ public class MainActivity extends ActionBarActivity {
                         sentStatus.add(i, status);
 
                         //TODO change the arguments below
-                        sentItemsList.add(i, new ReferralItem(ID, "",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                        sentItemsList.add(i, new ReferralItem(ID, "", name, patientName, "", reason, status, new ArrayList<messages.Message>(), ""));
+
+                     /*   JSONObject sent1 = new JSONObject();
+
+                        sent1.put("id",ID);
+                        sent1.put("name",name);
+                        sent1.put("patientName",patientName);
+                        sent1.put("reason",reason);
+                        sent1.put("status",status);
+
+                        sent.put(sent);
+                    }
+
+                    prefs.edit().putString("sent",sent.toString()).commit();
+*/
                     }
 
                 }

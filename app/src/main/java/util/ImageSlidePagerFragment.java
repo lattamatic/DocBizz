@@ -49,15 +49,15 @@ public class ImageSlidePagerFragment extends Fragment {
 
             // Set the title view to show the page number.
             switch (getPageNumber()) {
-                case 0:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.ic_launcher);
+                case 0:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.txt1);
                     break;
-                case 1:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.ic_launcher);
+                case 1:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.txt2);
                     break;
-                case 2:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.ic_launcher);
+                case 2:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.txt3);
                     break;
-                case 3:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.ic_launcher);
+                case 3:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.txt4);
                     break;
-                case 4:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.ic_launcher);
+                case 4:((ImageView) rootView.findViewById(R.id.sliding_image)).setImageResource(R.drawable.txt5);
                     break;
             }
 
