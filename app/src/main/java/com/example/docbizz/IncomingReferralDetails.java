@@ -2,7 +2,9 @@ package com.example.docbizz;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -12,15 +14,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Handler;
 
 import util.ServiceHandler;
 import util.data;
@@ -28,6 +33,7 @@ import util.data;
 
 public class IncomingReferralDetails extends ActionBarActivity {
 
+    public static android.os.Handler mHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +41,16 @@ public class IncomingReferralDetails extends ActionBarActivity {
 
         ImageView btnApproveReferral = (ImageView) findViewById(R.id.btnApproveReferral);
         ImageView btnDeclineReferral = (ImageView) findViewById(R.id.btnDeclineReferral);
+
+        final Intent intent = getIntent();
+        String referralId = intent.getStringExtra("referralID");
+        int index = intent.getIntExtra("index", 1);
+        Log.i("index", index + "");
+        if(referralId!=null) {
+            new GetReferralDetails().execute(referralId);
+        }
+
+        final String fromDoctor = MainActivity.inboxItemsList.get(index).doctorName;
 
         btnApproveReferral.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,29 +68,60 @@ public class IncomingReferralDetails extends ActionBarActivity {
                 new ApproveDeclineReferral().execute("","Declined"); //TODO edit the arguments
             }
         });
+
+        mHandler = new android.os.Handler() {
+            @Override public void handleMessage(Message msg) {
+                try {
+                    JSONObject responseObj = new JSONObject(msg.obj.toString());
+                    JSONObject detailsObj = responseObj.getJSONArray("details").getJSONObject(0);
+                    JSONArray commentsArr = responseObj.getJSONArray("comments");
+
+                    TextView txtFromRecipient = (TextView) findViewById(R.id.txtFromRecipient);
+                    TextView txtPatientName = (TextView) findViewById(R.id.txtPatientName);
+                    TextView txtPatientPhoneNo = (TextView) findViewById(R.id.txtPatientPhoneNo);
+                    TextView txtPatientReason = (TextView) findViewById(R.id.txtPatientReason);
+
+                    txtPatientName.setText(detailsObj.getString("name"));
+                    txtPatientPhoneNo.setText(detailsObj.getString("mbl"));
+                    txtPatientReason.setText(detailsObj.getString("reason"));
+
+                    txtFromRecipient.setText(fromDoctor);
+
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
     }
+    public static class GetReferralDetails extends AsyncTask<String,Void,String> {
 
+        String referralId;
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_incoming_referral_details, menu);
-        return true;
-    }
+        @Override
+        protected String doInBackground(String... params) {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+            referralId = params[0];
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            List<NameValuePair> paramsList = new ArrayList<>();
+            paramsList.add(new BasicNameValuePair("ref_id",referralId));
+
+            ServiceHandler requestMaker = new ServiceHandler();
+
+            String response = requestMaker.makeServiceCall(data.urlReferralDetails, ServiceHandler.POST, paramsList);
+
+            Message msg = new Message();
+            msg.obj = response;
+            mHandler.sendMessage(msg);
+
+            return null;
         }
-
-        return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
     }
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
