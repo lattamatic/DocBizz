@@ -88,6 +88,7 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
     public static JSONArray reports, contacts, inbox, sent;
+    public static Handler sendReferralHandler;
     public String inviteName, invitePhone;
     static SharedPreferences prefs;
     final int CONTACT_KEY = 1;
@@ -101,6 +102,8 @@ public class MainActivity extends ActionBarActivity {
 
         loadInboxProgress = new ProgressDialog(MainActivity.this);
         loadSentProgress = new ProgressDialog(MainActivity.this);
+
+        sendReferralHandler = new Handler();
 
         prefs = getSharedPreferences("DocBizz", MODE_PRIVATE);
 
@@ -336,7 +339,6 @@ public class MainActivity extends ActionBarActivity {
                     if(contactsName.contains(selectedDoctor)) {
                         ContactItem item = contactItemArrayList.get(contactsName.indexOf(selectedDoctor));
 
-                        Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
                         new SendReferral().execute(id, item.id, editPatientName.getText().toString(), editPatientContactNumber.getText().toString(),
                                 editPatientReason.getText().toString(), editPatientMessage.getText().toString());
                     }
@@ -1095,9 +1097,11 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public static class SendReferral extends AsyncTask<String,Void,String>{
+    public static class SendReferral extends AsyncTask<String,Void,String> {
+
 
         private String senderId, receiverId, patientName, patientMobile, reason, message;
+        boolean sendReferralSuccess = false;
 
         @Override
         protected String doInBackground(String... params) {
@@ -1109,17 +1113,17 @@ public class MainActivity extends ActionBarActivity {
             reason = params[4];
             message = params[5];
 
-            Log.i("receiverId",receiverId);
-            Log.i("senderId",senderId);
+            Log.i("receiverId", receiverId);
+            Log.i("senderId", senderId);
 
             List<NameValuePair> paramsList = new ArrayList<>();
 
-            paramsList.add(new BasicNameValuePair("sender",senderId));
-            paramsList.add(new BasicNameValuePair("receiver",receiverId));
-            paramsList.add(new BasicNameValuePair("name",patientName));
-            paramsList.add(new BasicNameValuePair("mbl",patientMobile));
-            paramsList.add(new BasicNameValuePair("reason",reason));
-            paramsList.add(new BasicNameValuePair("message",message));
+            paramsList.add(new BasicNameValuePair("sender", senderId));
+            paramsList.add(new BasicNameValuePair("receiver", receiverId));
+            paramsList.add(new BasicNameValuePair("name", patientName));
+            paramsList.add(new BasicNameValuePair("mbl", patientMobile));
+            paramsList.add(new BasicNameValuePair("reason", reason));
+            paramsList.add(new BasicNameValuePair("message", message));
 
             ServiceHandler requestMaker = new ServiceHandler();
 
@@ -1127,13 +1131,18 @@ public class MainActivity extends ActionBarActivity {
 
             try {
                 JSONObject sendReferralJSON = new JSONObject(response);
-                Log.d("sendReferralJSON",String.valueOf(sendReferralJSON));
+                if (sendReferralJSON.getInt("result") == 0)
+                    sendReferralSuccess = false;
+                else
+                    sendReferralSuccess = true;
+                Log.d("sendReferralJSON", String.valueOf(sendReferralJSON));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             return null;
         }
+
     }
 
 }
