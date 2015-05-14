@@ -13,7 +13,7 @@ import messages.Message;
 public class ReferralItem {
     String id;
     String doctorPicURL;
-    String doctorName;
+    public String doctorName;
     String patientName;
     String phoneNumber;
     String patientReason;

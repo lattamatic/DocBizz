@@ -40,9 +40,14 @@ public class SentReferralDetails extends ActionBarActivity {
 
         final Intent intent = getIntent();
         String referralId = intent.getStringExtra("referralID");
+        int index = intent.getIntExtra("index", 1);
+        Log.i("index", index + "");
         if(referralId!=null) {
             new GetReferralDetails().execute(referralId);
         }
+
+        final String toDoctor = MainActivity.sentItemsList.get(index).doctorName;
+
         mHandler = new android.os.Handler() {
             @Override public void handleMessage(Message msg) {
                 try {
@@ -56,13 +61,12 @@ public class SentReferralDetails extends ActionBarActivity {
                     TextView txtPatientReason = (TextView) findViewById(R.id.txtPatientReason);
                     TextView txtReferralStatus = (TextView) findViewById(R.id.txtReferralStatus);
 
-                    String toDoctor = intent.getStringExtra("toDoctor");
-
-                    txtToRecipient.setText(toDoctor);
                     txtPatientName.setText(detailsObj.getString("name"));
                     txtPatientPhoneNo.setText(detailsObj.getString("mbl"));
                     txtPatientReason.setText(detailsObj.getString("reason"));
                     txtReferralStatus.setText(data.getStatusFromFlag(detailsObj.getInt("status")));
+
+                    txtToRecipient.setText(toDoctor);
 
                 }
                 catch(Exception e) {
@@ -95,5 +99,10 @@ public class SentReferralDetails extends ActionBarActivity {
 
             return null;
         }
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
     }
 }

@@ -1,6 +1,7 @@
 package referrals;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,7 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.docbizz.IncomingReferralDetails;
 import com.example.docbizz.R;
+import com.example.docbizz.SentReferralDetails;
 
 import java.util.ArrayList;
 
@@ -54,6 +57,18 @@ public class IncomingReferralRecyclerViewAdapter extends RecyclerView.Adapter<In
                 inflate(R.layout.referral_recyclerview_element,
                         viewGroup,
                         false);
+
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = InboxReferralItem.recyclerViewInbox.getChildPosition(v);
+                Intent intent = new Intent(context, IncomingReferralDetails.class);
+                intent.putExtra("referralID", items.get(position).id);
+                intent.putExtra("index",position);
+                context.startActivity(intent);
+            }
+        });
+
         return new ListItemViewHolder(itemView);
     }
 
