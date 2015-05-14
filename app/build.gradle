@@ -29,4 +29,6 @@ dependencies {
     compile files('libraries/android-support-v13.jar')
     compile 'com.google.android.gms:play-services:6.+'
     compile 'com.android.support:cardview-v7:21.+'
+    compile 'it.neokree:MaterialTabs:0.11'
+    compile 'com.nineoldandroids:library:2.4.0'
 }

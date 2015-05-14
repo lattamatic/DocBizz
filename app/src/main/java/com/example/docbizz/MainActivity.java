@@ -50,6 +50,9 @@ import java.util.List;
 
 import contacts.ContactItem;
 import contacts.ContactRecyclerViewAdapter;
+import it.neokree.materialtabs.MaterialTab;
+import it.neokree.materialtabs.MaterialTabHost;
+import it.neokree.materialtabs.MaterialTabListener;
 import navigationDrawer.NavDrawerItem;
 import navigationDrawer.NavDrawerListAdapter;
 import referrals.InboxReferralItem;
@@ -499,10 +502,11 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public static class ReferralsFragment extends Fragment {
+    public static class ReferralsFragment extends Fragment implements MaterialTabListener {
 
-        ViewPager mViewPager;
+        public static ViewPager mViewPager;
         static Handler mHandler;
+        public static MaterialTabHost tabHost;
 
         public ReferralsFragment() {
         }
@@ -520,6 +524,18 @@ public class MainActivity extends ActionBarActivity {
 
             mViewPager.setAdapter(customAdapter);
             mViewPager.setCurrentItem(0);
+
+            tabHost = (MaterialTabHost) rootView.findViewById(R.id.materialTabHostText);
+
+            tabHost.addTab(
+                    tabHost.newTab()
+                            .setText("Inbox").setTabListener(this)
+            );
+
+            tabHost.addTab(
+                    tabHost.newTab()
+                            .setText("Sent").setTabListener(this)
+            );
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             final String id = sharedPreferences.getString("id", "");
@@ -582,6 +598,7 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onPageSelected(int position) {
                     mViewPager.setCurrentItem(position);
+                    tabHost.setSelectedNavigationItem(position);
                     if (position == 0) {
 
   /*                      try {
@@ -672,6 +689,24 @@ public class MainActivity extends ActionBarActivity {
 
             return rootView;
         }
+
+        @Override
+        public void onTabSelected(MaterialTab tab) {
+            // when the tab is clicked display the pager swipe content to the tab position
+            mViewPager.setCurrentItem(tab.getPosition());
+            tabHost.setSelectedNavigationItem(tab.getPosition());
+        }
+
+        @Override
+        public void onTabReselected(MaterialTab materialTab) {
+
+        }
+
+        @Override
+        public void onTabUnselected(MaterialTab materialTab) {
+
+        }
+
     }
 
     public static class GetContactsList extends AsyncTask<String,Void,String>{
