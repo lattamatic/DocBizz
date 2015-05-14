@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.docbizz.MainActivity;
 import com.example.docbizz.R;
 import com.example.docbizz.SentReferralDetails;
 
@@ -61,9 +62,10 @@ public class SentReferralRecyclerViewAdapter extends RecyclerView.Adapter<SentRe
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+               int position = SentReferralItem.recyclerViewSent.getChildPosition(v);
                 Intent intent = new Intent(context, SentReferralDetails.class);
-                intent.putExtra("referralID", items.get(i).id);
-                intent.putExtra("toDoctor", items.get(i).doctorName);
+                intent.putExtra("referralID", items.get(position).id);
+                intent.putExtra("index",position);
                 context.startActivity(intent);
             }
         });
