@@ -22,6 +22,12 @@
         <item>IITM Hospital</item>
     </string-array>
 
+    <string-array name="specialities_array">
+        <item>Child specialist</item>
+        <item>Diabetes specialist</item>
+        <item>Neuro Surgeon</item>
+    </string-array>
+
     <string name="title_activity_login">Login</string>
     <string name="title_activity_home">Home</string>
     <string name="title_activity_incoming_referral_details">IncomingReferralDetails</string>

@@ -155,7 +155,7 @@
             android:text=""/>
     </LinearLayout>
 
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:layout_height="fill_parent"
@@ -172,5 +172,5 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:src="@drawable/ic_launcher"/>
-    </LinearLayout>
+    </LinearLayout>-->
 </LinearLayout>
