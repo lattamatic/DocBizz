@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -44,6 +45,7 @@ public class IncomingReferralDetails extends ActionBarActivity {
 
         final Intent intent = getIntent();
         String referralId = intent.getStringExtra("referralID");
+        Log.i("ref_id", referralId);
         int index = intent.getIntExtra("index", 1);
         Log.i("index", index + "");
         if(referralId!=null) {
@@ -55,9 +57,8 @@ public class IncomingReferralDetails extends ActionBarActivity {
         btnApproveReferral.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DialogFragment newFragment = new DatePickerFragment();
-                newFragment.show(getSupportFragmentManager(), "datePicker");
-
+                //DialogFragment newFragment = new DatePickerFragment();
+                //newFragment.show(getSupportFragmentManager(), "datePicker");
                 new ApproveDeclineReferral().execute("","Approved"); //TODO edit the arguments. Also check bottom most TODOs to decide if this is needed
             }
         });
@@ -71,26 +72,34 @@ public class IncomingReferralDetails extends ActionBarActivity {
 
         mHandler = new android.os.Handler() {
             @Override public void handleMessage(Message msg) {
-                try {
-                    JSONObject responseObj = new JSONObject(msg.obj.toString());
-                    JSONObject detailsObj = responseObj.getJSONArray("details").getJSONObject(0);
-                    JSONArray commentsArr = responseObj.getJSONArray("comments");
+                if(msg.obj!=null) {
+                    try {
+                        JSONObject responseObj = new JSONObject(msg.obj.toString());
+                        JSONObject detailsObj = responseObj.getJSONArray("details").getJSONObject(0);
+                        JSONArray commentsArr = responseObj.getJSONArray("comments");
 
-                    TextView txtFromRecipient = (TextView) findViewById(R.id.txtFromRecipient);
-                    TextView txtPatientName = (TextView) findViewById(R.id.txtPatientName);
-                    TextView txtPatientPhoneNo = (TextView) findViewById(R.id.txtPatientPhoneNo);
-                    TextView txtPatientReason = (TextView) findViewById(R.id.txtPatientReason);
+                        TextView txtFromRecipient = (TextView) findViewById(R.id.txtFromRecipient);
+                        TextView txtPatientName = (TextView) findViewById(R.id.txtPatientName);
+                        TextView txtPatientPhoneNo = (TextView) findViewById(R.id.txtPatientPhoneNo);
+                        TextView txtPatientReason = (TextView) findViewById(R.id.txtPatientReason);
 
-                    txtPatientName.setText(detailsObj.getString("name"));
-                    txtPatientPhoneNo.setText(detailsObj.getString("mbl"));
-                    txtPatientReason.setText(detailsObj.getString("reason"));
+                        txtPatientName.setText(detailsObj.getString("name"));
+                        txtPatientPhoneNo.setText(detailsObj.getString("mbl"));
+                        txtPatientReason.setText(detailsObj.getString("reason"));
 
-                    txtFromRecipient.setText(fromDoctor);
+                        txtFromRecipient.setText(fromDoctor);
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
+                    if(msg.arg1 == 0) {
+                        Toast.makeText(getApplicationContext(), "The referral has been approved.", Toast.LENGTH_SHORT).show();
+                    }
+                    else if(msg.arg1 == 1) {
+                        Toast.makeText(getApplicationContext(), "The referral has been declined.", Toast.LENGTH_SHORT).show();
+                    }
+
 
             }
         };
@@ -113,6 +122,7 @@ public class IncomingReferralDetails extends ActionBarActivity {
 
             Message msg = new Message();
             msg.obj = response;
+            msg.arg1 = -1;
             mHandler.sendMessage(msg);
 
             return null;
@@ -158,7 +168,8 @@ public class IncomingReferralDetails extends ActionBarActivity {
             List<NameValuePair> paramsList = new ArrayList<>();
 
             paramsList.add(new BasicNameValuePair("ref_id",Id));
-            paramsList.add(new BasicNameValuePair("status",status));
+            Log.i("status", data.getFlagFromStatus(status) + "");
+            paramsList.add(new BasicNameValuePair("status",data.getFlagFromStatus(status)+""));
 
             ServiceHandler requestMaker = new ServiceHandler();
 
@@ -171,6 +182,16 @@ public class IncomingReferralDetails extends ActionBarActivity {
                 e.printStackTrace();
             }
 
+            if(status.equals("Approved")) {
+                Message msg = new Message();
+                msg.arg1 = 0;
+                mHandler.sendMessage(msg);
+            }
+            else if(status.equals("Declined")){
+                Message msg = new Message();
+                msg.arg1 = 1;
+                mHandler.sendMessage(msg);
+            }
             return null;
         }
     }

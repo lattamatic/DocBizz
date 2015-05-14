@@ -53,5 +53,17 @@ public class data {
         }
     }
 
+    public static int getFlagFromStatus(String status) {
+        if(status.equals("Pending")) {
+            return 0;
+        }
+        else if(status.equals("Approved")) {
+            return 1;
+        }
+        else if(status.equals("Declined")) {
+            return 2;
+        }
+        else return 0;
+    }
 }
 
