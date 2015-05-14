@@ -333,12 +333,16 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View v) {
 
                     String selectedDoctor = autoCompleteTextViewToDoctor.getText().toString();
-                    ContactItem item = contactItemArrayList.get( contactsName.indexOf(selectedDoctor));
+                    if(contactsName.contains(selectedDoctor)) {
+                        ContactItem item = contactItemArrayList.get(contactsName.indexOf(selectedDoctor));
 
-                    Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
-                    new SendReferral().execute(id,item.id,editPatientName.getText().toString(),editPatientContactNumber.getText().toString(),
-                            editPatientReason.getText().toString(),editPatientMessage.getText().toString());
+                        Toast.makeText(rootView.getContext(), item.doctorName + " " + item.id + " " + contactsName.indexOf(selectedDoctor), Toast.LENGTH_SHORT).show();
+                        new SendReferral().execute(id, item.id, editPatientName.getText().toString(), editPatientContactNumber.getText().toString(),
+                                editPatientReason.getText().toString(), editPatientMessage.getText().toString());
+                    }
 
+                    else
+                        Toast.makeText(getActivity().getApplicationContext(),"The selected doctor is not in your contacts list",Toast.LENGTH_SHORT).show();
 
                 }
             });

@@ -4,13 +4,11 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.ImageView;
@@ -26,7 +24,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.logging.Handler;
 
 import util.ServiceHandler;
 import util.data;
@@ -46,7 +43,7 @@ public class IncomingReferralDetails extends ActionBarActivity {
         final Intent intent = getIntent();
         String referralId = intent.getStringExtra("referralID");
         Log.i("ref_id", referralId);
-        int index = intent.getIntExtra("index", 1);
+        final int index = intent.getIntExtra("index", 1);
         Log.i("index", index + "");
         if(referralId!=null) {
             new GetReferralDetails().execute(referralId);
