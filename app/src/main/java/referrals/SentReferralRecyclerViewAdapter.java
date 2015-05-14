@@ -1,6 +1,7 @@
 package referrals;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.docbizz.R;
+import com.example.docbizz.SentReferralDetails;
 
 import java.util.ArrayList;
 
@@ -44,16 +46,28 @@ public class SentReferralRecyclerViewAdapter extends RecyclerView.Adapter<SentRe
             txtReferralStatus = (TextView) itemView.findViewById(R.id.txtReferralStatus);
             txtReferralTime = (TextView) itemView.findViewById(R.id.txtReferralTime);
             //txtReferralPatientReason = (TextView) itemView.findViewById(R.id.txtReferralPatientReason);
+
         }
     }
 
     @Override
-    public ListItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public ListItemViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
         View itemView = LayoutInflater.
                 from(viewGroup.getContext()).
                 inflate(R.layout.referral_recyclerview_element,
                         viewGroup,
                         false);
+
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, SentReferralDetails.class);
+                intent.putExtra("referralID", items.get(i).id);
+                intent.putExtra("toDoctor", items.get(i).doctorName);
+                context.startActivity(intent);
+            }
+        });
+
         return new ListItemViewHolder(itemView);
     }
 

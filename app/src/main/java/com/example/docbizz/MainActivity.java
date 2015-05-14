@@ -654,14 +654,14 @@ public class MainActivity extends ActionBarActivity {
                         reason = tempJSON.getString("reason");
                         senderID = tempJSON.getString("sender");
                         patientName = tempJSON.getString("patName");
-                        status = getStatusFromFlag(tempJSON.getInt("status"));
+                        status = data.getStatusFromFlag(tempJSON.getInt("status"));
                         inboxIDs.add(i, ID);
                         inboxName.add(i, name);
                         inboxSenderID.add(i, senderID);
                         inboxReason.add(i, reason);
 
                         //TODO change the arguments below
-                        inboxItemsList.add(i, new ReferralItem("",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                        inboxItemsList.add(i, new ReferralItem(ID,"",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
                     }
 
                 }
@@ -691,19 +691,6 @@ public class MainActivity extends ActionBarActivity {
             }
         }
 
-    }
-
-    private static String getStatusFromFlag(int status) {
-        switch(status) {
-            case 0 :
-                return "Pending";
-            case 1 :
-                return "Approved";
-            case 2 :
-                return "Declined";
-            default :
-                return "";
-        }
     }
 
     public static class LoadSent extends AsyncTask<String,Void,String>{
@@ -757,7 +744,7 @@ public class MainActivity extends ActionBarActivity {
                         ID = tempJSON.getString("id");
                         name = tempJSON.getString("name");
                         patientName = tempJSON.getString("patName");
-                        status = getStatusFromFlag(tempJSON.getInt("status"));
+                        status = data.getStatusFromFlag(tempJSON.getInt("status"));
                         receiverID = tempJSON.getString("receiver");
                         reason = tempJSON.getString("reason");
                         sentIDs.add(i, ID);
@@ -766,7 +753,7 @@ public class MainActivity extends ActionBarActivity {
                         sentStatus.add(i, status);
 
                         //TODO change the arguments below
-                        sentItemsList.add(i, new ReferralItem("",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
+                        sentItemsList.add(i, new ReferralItem(ID, "",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
                     }
 
                 }
