@@ -2,13 +2,10 @@ package referrals;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +13,6 @@ import android.view.ViewGroup;
 import com.example.docbizz.MainActivity;
 import com.example.docbizz.R;
 
-import util.DividerItemDecoration;
 import util.InfiniteRecyclerViewOnScrollListener;
 
 /**
@@ -43,7 +39,7 @@ public class SentReferralItem extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_referrals_sent, null);
 
-        MainActivity.sentAdapter = new ReferralRecyclerViewAdapter(MainActivity.sentItemsList,root.getContext());
+        MainActivity.sentAdapter = new SentReferralRecyclerViewAdapter(MainActivity.sentItemsList,root.getContext());
 
         recyclerViewSent = (RecyclerView) root.findViewById(R.id.recyclerViewReferralsSent);
         final LinearLayoutManager layoutManagerSent = new LinearLayoutManager(root.getContext());

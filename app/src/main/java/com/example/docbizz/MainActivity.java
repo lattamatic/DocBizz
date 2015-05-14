@@ -53,9 +53,10 @@ import contacts.ContactRecyclerViewAdapter;
 import navigationDrawer.NavDrawerItem;
 import navigationDrawer.NavDrawerListAdapter;
 import referrals.InboxReferralItem;
+import referrals.IncomingReferralRecyclerViewAdapter;
 import referrals.ReferralItem;
-import referrals.ReferralRecyclerViewAdapter;
 import referrals.SentReferralItem;
+import referrals.SentReferralRecyclerViewAdapter;
 import referrals.ViewPagerAdapter;
 import reports.ReportItem;
 import reports.ReportRecyclerViewAdapter;
@@ -71,7 +72,8 @@ public class MainActivity extends ActionBarActivity {
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     public static ViewPagerAdapter customAdapter;
-    public static ReferralRecyclerViewAdapter inboxAdapter, sentAdapter;
+    public static IncomingReferralRecyclerViewAdapter inboxAdapter;
+    public static SentReferralRecyclerViewAdapter sentAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
     public static ProgressDialog loadInboxProgress, loadSentProgress;
     public static ArrayList<String> contactsIDs, contactsName, contactsEmail, contactsPhone, contactsSpeciality, contactsCity, contactsHospital;
@@ -521,14 +523,14 @@ public class MainActivity extends ActionBarActivity {
                     if(msg.arg1 == 0) {
                         Log.i("inbox", "" + inboxItemsList.size());
                         inboxAdapter = null;
-                        inboxAdapter = new ReferralRecyclerViewAdapter(inboxItemsList, rootView.getContext());
+                        inboxAdapter = new IncomingReferralRecyclerViewAdapter(inboxItemsList, rootView.getContext());
                         InboxReferralItem.recyclerViewInbox.setAdapter(inboxAdapter);
                         inboxAdapter.notifyDataSetChanged();
                     }
                     else if(msg.arg1 == 1) {
                         Log.i("sent", "" + sentItemsList.size());
                         sentAdapter = null;
-                        sentAdapter = new ReferralRecyclerViewAdapter(sentItemsList, rootView.getContext());
+                        sentAdapter = new SentReferralRecyclerViewAdapter(sentItemsList, rootView.getContext());
                         SentReferralItem.recyclerViewSent.setAdapter(sentAdapter);
                         sentAdapter.notifyDataSetChanged();
                     }

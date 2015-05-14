@@ -18,12 +18,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by aravind on 12/5/15.
  */
 
-public class ReferralRecyclerViewAdapter extends RecyclerView.Adapter<ReferralRecyclerViewAdapter.ListItemViewHolder>{
+public class IncomingReferralRecyclerViewAdapter extends RecyclerView.Adapter<IncomingReferralRecyclerViewAdapter.ListItemViewHolder>{
 
     private ArrayList<ReferralItem> items;
     private Context context;
 
-    public ReferralRecyclerViewAdapter(ArrayList<ReferralItem> items, Context context) {
+    public IncomingReferralRecyclerViewAdapter(ArrayList<ReferralItem> items, Context context) {
         this.items = items;
         this.context = context;
     }
