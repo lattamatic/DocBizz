@@ -16,7 +16,7 @@ public class data {
             new NavDrawerItem("Send Referral", R.drawable.calendar),
             new NavDrawerItem("Referrals",R.drawable.registered),
             new NavDrawerItem("Reports",R.drawable.reports),
-            new NavDrawerItem("Contacts",R.drawable.ic_launcher),
+            new NavDrawerItem("Contacts",R.drawable.contacts),
             new NavDrawerItem("Invite a friend",R.drawable.inviteafriend),
             new NavDrawerItem("Help",R.drawable.help),
             new NavDrawerItem("Logout",R.drawable.logout)

@@ -84,7 +84,7 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
-    public static JSONArray reports;
+    public static JSONArray reports, contacts;
     public String inviteName, invitePhone;
     static SharedPreferences prefs;
     final int CONTACT_KEY = 1;
@@ -453,10 +453,36 @@ public class MainActivity extends ActionBarActivity {
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
 
-            contactItemArrayList = new ArrayList<>();
+            //contactItemArrayList = new ArrayList<>();
 
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             String id = sharedPreferences.getString("id", "");
+
+            try {
+                JSONArray contactsArray = new JSONArray(prefs.getString("contacts",""));
+
+                String doc_id, name, email, mobile, city, hospital, speciality;
+
+                contactItemArrayList = new ArrayList<>();
+
+                for(int i =0;i<contactsArray.length();i++) {
+                    JSONObject contactsJSON = contactsArray.getJSONObject(i);
+                    name = contactsJSON.getString("name");
+                    email = contactsJSON.getString("email");
+                    mobile = contactsJSON.getString("mobile");
+                    hospital = contactsJSON.getString("hospital");
+                    speciality = contactsJSON.getString("speciality");
+                    city = contactsJSON.getString("city");
+                    doc_id = contactsJSON.getString("id");
+
+                    contactItemArrayList.add(i, new ContactItem(doc_id,"",name,mobile,email,hospital,city,speciality));
+                }
+
+                Log.i("Inside","sharedPrefs");
+                Log.i("reportList",contactItemArrayList.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
             final ContactRecyclerViewAdapter adapter = new ContactRecyclerViewAdapter(contactItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
@@ -598,28 +624,55 @@ public class MainActivity extends ActionBarActivity {
                     contactsCity = new ArrayList<>();
                     contactsHospital = new ArrayList<>();
 
+                    contacts = new JSONArray();
+
+                    String id,name,email,mobile,speciality,city,hospital;
+
                     for(int i=0; i < contactsArray.length();i++){
                         JSONObject tempJSON = new JSONObject();
                         tempJSON = contactsArray.getJSONObject(i);
-                        contactsIDs.add(i, tempJSON.getString("id"));
-                        contactsName.add(i, tempJSON.getString("name"));
-                        contactsEmail.add(i, tempJSON.getString("email"));
-                        contactsPhone.add(i, tempJSON.getString("mobile"));
-                        contactsSpeciality.add(i, tempJSON.getString("speciality"));
-                        contactsCity.add(i, tempJSON.getString("city"));
-                        contactsHospital.add(i, tempJSON.getString("hospital"));
 
-                        ContactItem tempContact = new ContactItem(contactsIDs.get(i),"",contactsName.get(i),contactsPhone.get(i),contactsEmail.get(i),contactsHospital.get(i),contactsCity.get(i),contactsSpeciality.get(i));
+                        id = tempJSON.getString("id");
+                        name = tempJSON.getString("name");
+                        email = tempJSON.getString("email");
+                        mobile = tempJSON.getString("mobile");
+                        speciality = tempJSON.getString("speciality");
+                        city = tempJSON.getString("city");
+                        hospital = tempJSON.getString("hospital");
+                        contactsIDs.add(i, id);
+                        contactsName.add(i, name);
+                        contactsEmail.add(i, email);
+                        contactsPhone.add(i, mobile);
+                        contactsSpeciality.add(i, speciality);
+                        contactsCity.add(i, city);
+                        contactsHospital.add(i, hospital);
+
+                        ContactItem tempContact = new ContactItem(id,"",name,mobile,email,hospital,city,speciality);
                         //TODO change this to add imageURL
 
                         contactItemArrayList.add(i, tempContact);
+
+                        JSONObject contact1 = new JSONObject();
+
+                        contact1.put("id",id);
+                        contact1.put("name",name);
+                        contact1.put("mobile",mobile);
+                        contact1.put("email",email);
+                        contact1.put("hospital", hospital);
+                        contact1.put("city",city);
+                        contact1.put("speciality",speciality);
+
+                        contacts.put(i,contact1);
+                    }
+
+                    prefs.edit().putString("contacts",contacts.toString()).commit();
                     }
                     Log.i("str", "sr");
 
                     if(params[1].equals("Contacts")) {
                         ContactsFragment.mHandler.sendEmptyMessage(1);
                     }
-                }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
