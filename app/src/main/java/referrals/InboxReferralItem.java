@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.example.docbizz.MainActivity;
 import com.example.docbizz.R;
 
+import util.DividerItemDecoration;
 import util.InfiniteRecyclerViewOnScrollListener;
 
 /**
@@ -59,7 +60,7 @@ public class InboxReferralItem extends Fragment {
             }
         };
         recyclerViewInbox.setOnScrollListener(onScrollListenerInbox);
-
+        //recyclerViewInbox.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
         recyclerViewInbox.setAdapter(MainActivity.inboxAdapter);
 
         return root;

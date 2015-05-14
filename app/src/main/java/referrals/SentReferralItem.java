@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.example.docbizz.MainActivity;
 import com.example.docbizz.R;
 
+import util.DividerItemDecoration;
 import util.InfiniteRecyclerViewOnScrollListener;
 
 /**
@@ -59,6 +60,7 @@ public class SentReferralItem extends Fragment {
             }
         };
         recyclerViewSent.setOnScrollListener(onScrollListenerSent);
+        //recyclerViewSent.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST));
 
         recyclerViewSent.setAdapter(MainActivity.sentAdapter);
 

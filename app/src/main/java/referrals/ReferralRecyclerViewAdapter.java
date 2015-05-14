@@ -29,7 +29,7 @@ public class ReferralRecyclerViewAdapter extends RecyclerView.Adapter<ReferralRe
     }
 
     public final static class ListItemViewHolder extends RecyclerView.ViewHolder {
-        TextView txtDoctorName, txtReferralTime, txtReferralPatientName, txtReferralStatus;
+        TextView txtDoctorName, txtReferralTime, txtReferralPatientName, txtReferralStatus,txtReferralPatientReason;
         CircleImageView imgDoctorPic;
 
         public ReferralItem item;
@@ -43,6 +43,7 @@ public class ReferralRecyclerViewAdapter extends RecyclerView.Adapter<ReferralRe
             txtReferralPatientName = (TextView) itemView.findViewById(R.id.txtReferralPatientName);
             txtReferralStatus = (TextView) itemView.findViewById(R.id.txtReferralStatus);
             txtReferralTime = (TextView) itemView.findViewById(R.id.txtReferralTime);
+            //txtReferralPatientReason = (TextView) itemView.findViewById(R.id.txtReferralPatientReason);
         }
     }
 
@@ -65,6 +66,7 @@ public class ReferralRecyclerViewAdapter extends RecyclerView.Adapter<ReferralRe
         listItemViewHolder.txtReferralTime.setText(item.referralDate);
         listItemViewHolder.txtReferralPatientName.setText(item.patientName);
         listItemViewHolder.txtReferralStatus.setText(item.status);
+        //listItemViewHolder.txtReferralPatientReason.setText(item.patientReason);
 
         if(!item.doctorPicURL.equals("")) {
             //TODO : Set the image of the circle image view to the image at the URL..

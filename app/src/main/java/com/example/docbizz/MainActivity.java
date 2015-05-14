@@ -634,7 +634,7 @@ public class MainActivity extends ActionBarActivity {
                     loadInboxSuccess = true;
 
                     JSONArray inboxArray = new JSONArray(inboxJSON.getString("inbox"));
-                    String ID,name,reason,senderID;
+                    String ID,name,reason,senderID,patientName, status;
 
                     Log.i("inboxJSON", String.valueOf(inboxArray));
 
@@ -651,13 +651,15 @@ public class MainActivity extends ActionBarActivity {
                         name = tempJSON.getString("name");
                         reason = tempJSON.getString("reason");
                         senderID = tempJSON.getString("sender");
+                        patientName = tempJSON.getString("patName");
+                        status = getStatusFromFlag(tempJSON.getInt("status"));
                         inboxIDs.add(i, ID);
                         inboxName.add(i, name);
                         inboxSenderID.add(i, senderID);
                         inboxReason.add(i, reason);
 
                         //TODO change the arguments below
-                        inboxItemsList.add(i, new ReferralItem("",name,"","",reason,"",new ArrayList<messages.Message>(),""));
+                        inboxItemsList.add(i, new ReferralItem("",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
                     }
 
                 }
@@ -670,6 +672,8 @@ public class MainActivity extends ActionBarActivity {
 
             return null;
         }
+
+
 
         @Override
         protected void onPostExecute(String res){
@@ -685,6 +689,19 @@ public class MainActivity extends ActionBarActivity {
             }
         }
 
+    }
+
+    private static String getStatusFromFlag(int status) {
+        switch(status) {
+            case 0 :
+                return "Pending";
+            case 1 :
+                return "Approved";
+            case 2 :
+                return "Declined";
+            default :
+                return "";
+        }
     }
 
     public static class LoadSent extends AsyncTask<String,Void,String>{
@@ -723,7 +740,7 @@ public class MainActivity extends ActionBarActivity {
                     loadSentSuccess = true;
 
                     JSONArray sentArray = new JSONArray(inboxJSON.getString("sent"));
-                    String ID,name,status,receiverID;
+                    String ID,name,status,receiverID,patientName,reason;
 
                     Log.i("sentArray", String.valueOf(sentArray));
                     sentIDs = new ArrayList<>();
@@ -737,15 +754,17 @@ public class MainActivity extends ActionBarActivity {
                         tempJSON = sentArray.getJSONObject(i);
                         ID = tempJSON.getString("id");
                         name = tempJSON.getString("name");
-                        status = tempJSON.getString("status");
+                        patientName = tempJSON.getString("patName");
+                        status = getStatusFromFlag(tempJSON.getInt("status"));
                         receiverID = tempJSON.getString("receiver");
+                        reason = tempJSON.getString("reason");
                         sentIDs.add(i, ID);
                         sentName.add(i, name);
                         sentReceiverIDs.add(i, receiverID);
                         sentStatus.add(i, status);
 
                         //TODO change the arguments below
-                        sentItemsList.add(i, new ReferralItem("",name,"","","",status,new ArrayList<messages.Message>(),""));
+                        sentItemsList.add(i, new ReferralItem("",name,patientName,"",reason,status,new ArrayList<messages.Message>(),""));
                     }
 
                 }

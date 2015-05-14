@@ -15,7 +15,7 @@
         <item name="android:windowNoTitle">true</item>
     </style>
     <style name="Theme.AppCompat.StylishActionBar" parent="Theme.AppCompat.Light">
-        <item name="colorPrimary">@color/myPrimaryColor</item>
+        <item name="colorPrimary">@color/myStatusBarColor</item>
         <item name="colorPrimaryDark">@color/myStatusBarColor</item>
         <item name="actionBarStyle">@style/MyActionBar</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
