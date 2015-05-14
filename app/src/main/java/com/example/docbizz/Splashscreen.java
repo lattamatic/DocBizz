@@ -3,11 +3,9 @@ package com.example.docbizz;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
@@ -87,28 +85,29 @@ public class Splashscreen extends ActionBarActivity {
             paramsLogin.add(new BasicNameValuePair("password", password));
 
             String responseLogin = requestMakerLogin.makeServiceCall(data.urlLogin, ServiceHandler.POST, paramsLogin);
-            JSONObject responseLoginObject = null;
+            JSONObject responseLoginObject;
 
             if(responseLogin!=null) {
                 try {
                     responseLoginObject = new JSONObject(responseLogin);
+
+                    SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
+                    try {
+                        sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
+                        sharedPreferencesEditor.putString("id", responseLoginObject.getJSONObject("data").getString("id"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    sharedPreferencesEditor.commit();
+
+                    Intent intent = new Intent(Splashscreen.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
-            SharedPreferences.Editor sharedPreferencesEditor = getSharedPreferences("DocBizz", MODE_PRIVATE).edit();
-            try {
-                sharedPreferencesEditor.putString("user", responseLoginObject.getJSONObject("data").toString());
-                sharedPreferencesEditor.putString("id", responseLoginObject.getJSONObject("data").getString("id"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            sharedPreferencesEditor.commit();
-
-            Intent intent = new Intent(Splashscreen.this, MainActivity.class);
-            startActivity(intent);
-            finish();
 
             return null;
         }

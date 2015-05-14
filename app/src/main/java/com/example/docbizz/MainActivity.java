@@ -84,7 +84,9 @@ public class MainActivity extends ActionBarActivity {
     public static ArrayList<Integer> reportsSentApproved, reportsSentDeclined, reportsReceivedApproved, reportsReceivedDeclined;
     public static ArrayList<String> inboxIDs, inboxName, inboxSenderID, inboxReason;
     public static ArrayList<String> sentIDs, sentReceiverIDs, sentStatus, sentName;
+    public static JSONArray reports;
     public String inviteName, invitePhone;
+    static SharedPreferences prefs;
     final int CONTACT_KEY = 1;
     int currentFragment = 0;
     String inviteMessage1 = "Hello ", inviteMessage2 = ", try out this cool app ", inviteMessage3 = ""; //TODO inviteMessage3 contains playstore URL
@@ -96,6 +98,8 @@ public class MainActivity extends ActionBarActivity {
 
         loadInboxProgress = new ProgressDialog(MainActivity.this);
         loadSentProgress = new ProgressDialog(MainActivity.this);
+
+        prefs = getSharedPreferences("DocBizz", MODE_PRIVATE);
 
         setTitle("Referrals");
 
@@ -386,14 +390,38 @@ public class MainActivity extends ActionBarActivity {
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.setHasFixedSize(true);
 
-            reportItemArrayList = new ArrayList<>();
-
             SharedPreferences sharedPreferences = rootView.getContext().getSharedPreferences("DocBizz", MODE_PRIVATE);
             String id = sharedPreferences.getString("id", "");
-            new GetReports().execute(id);
+
+                try {
+                    JSONArray reportsArray = new JSONArray(prefs.getString("reports",""));
+
+                    String name, speciality;
+                    Integer rec_app,sent_app,rec_dec,sent_dec;
+
+                    reportItemArrayList = new ArrayList<>();
+
+                    for(int i =0;i<reportsArray.length();i++) {
+                        JSONObject reportsJSON = reportsArray.getJSONObject(i);
+                        name = reportsJSON.getString("name");
+                        rec_app = reportsJSON.getInt("rec_app");
+                        rec_dec = reportsJSON.getInt("rec_dec");
+                        sent_app = reportsJSON.getInt("sent_app");
+                        sent_dec = reportsJSON.getInt("sent_dec");
+
+                        reportItemArrayList.add(i, new ReportItem(name,sent_app,sent_dec,rec_app,rec_dec));
+                    }
+
+                    Log.i("Inside","sharedPrefs");
+                    Log.i("reportList",reportItemArrayList.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
             final ReportRecyclerViewAdapter adapter = new ReportRecyclerViewAdapter(reportItemArrayList, rootView.getContext());
             recyclerView.setAdapter(adapter);
+
+            new GetReports().execute(id);
 
             mHandler = new android.os.Handler() {
                 @Override public void handleMessage(Message msg) {
@@ -503,10 +531,9 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onPageSelected(int position) {
                     mViewPager.setCurrentItem(position);
-                    if(position==0){
-                        new LoadInbox().execute(id,String.valueOf(0),String.valueOf(10));
-                    }
-                    else if(position==1){
+                    if (position == 0) {
+                        new LoadInbox().execute(id, String.valueOf(0), String.valueOf(10));
+                    } else if (position == 1) {
                         new LoadSent().execute(id, String.valueOf(0), String.valueOf(10));
                     }
 
@@ -812,6 +839,9 @@ public class MainActivity extends ActionBarActivity {
                     reportsSentDeclined = new ArrayList<>();
                     reportsSentApproved = new ArrayList<>();
                     reportsSpeciality = new ArrayList<>();
+                    reportItemArrayList = new ArrayList<>();
+
+                    reports = new JSONArray();
 
                     for(int i=0; i < reportsArray.length();i++){
                         JSONObject tempJSON = new JSONObject();
@@ -836,8 +866,19 @@ public class MainActivity extends ActionBarActivity {
 
                         ReportItem tempReport = new ReportItem(name,sent_app,sent_dec,rec_app,rec_dec);
                         reportItemArrayList.add(i, tempReport);
+
+                        JSONObject report1 = new JSONObject();
+
+                        report1.put("name",name);
+                        report1.put("sent_app",sent_app);
+                        report1.put("sent_dec",sent_dec);
+                        report1.put("rec_app",rec_app);
+                        report1.put("rec_dec",rec_dec);
+
+                        reports.put(i,report1);
                     }
 
+                    prefs.edit().putString("reports",reports.toString()).commit();
                     ReportFragment.mHandler.sendEmptyMessage(1);
 
                 }
